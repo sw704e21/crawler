@@ -36,8 +36,8 @@ class RedditAPI:
             sub_dict = {field: to_dict[field] for field in self.fields}
 
             # posting submission data through the API
-            data = json.dump(sub_dict)
-            self.post_data(data)
+            submission_data = json.dump(sub_dict)
+            self.post_data(submission_data)
 
     def post_data(self, data):
         r = requests.post(self.api_url + "data/reddit", data=data)
