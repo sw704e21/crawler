@@ -29,15 +29,12 @@ class RedditAPI:
             self.submissions.add(submission)
             to_dict = vars(submission)
             sub_dict = {field: to_dict[field] for field in self.fields}
-            self.list_of_items.append(sub_dict)
 
-            with open('data.json', 'w') as f:
-                json.dump(self.list_of_items, f)
+            data = json.dump(sub_dict)
+            self.post_data(data)
 
-    def post_data(self):
-        with open('data.json', 'r') as f:
-            reddit = json.load(f)
-        r = requests.post(self.api_url + "data/reddit", data=reddit)
+    def post_data(self, data):
+        r = requests.post(self.api_url + "data/reddit", data=data)
 
         try:
             r.raise_for_status()
