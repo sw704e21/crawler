@@ -35,8 +35,8 @@ class RedditAPI:
                 json.dump(self.list_of_items, f)
 
     def post_data(self):
-        f = open('data.json')
-        reddit = json.load(f)
+        with open('data.json', 'r') as f:
+            reddit = json.load(f)
         r = requests.post(self.api_url + "data/reddit", data=reddit)
 
         try:
