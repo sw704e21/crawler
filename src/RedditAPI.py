@@ -11,6 +11,8 @@ def initialize_reddit():
 
 
 class RedditAPI:
+
+    # Specify the wanted fields from praw.submissions to be send through the API
     fields = ('title', 'url', 'selftext', 'score', 'created_utc', 'num_comments')
 
     def __init__(self):
@@ -24,21 +26,23 @@ class RedditAPI:
     def subreddit_stream(self, subreddit):
 
         subreddit = initialize_reddit().subreddit(subreddit)
-
+        # Loop over submissions for a given reddit
         for submission in subreddit.stream.submissions():
+
             self.submissions.add(submission)
+
+            # Adding the specified submission fields to the json object
             to_dict = vars(submission)
             sub_dict = {field: to_dict[field] for field in self.fields}
-            self.list_of_items.append(sub_dict)
 
-            with open('data.json', 'w') as f:
-                json.dump(self.list_of_items, f)
+            # posting submission data through the API
+            submission_data = json.dump(sub_dict)
+            self.post_data(submission_data)
 
-    def post_data(self):
-        with open('data.json', 'r') as f:
-            reddit = json.load(f)
-        r = requests.post(self.api_url + "data/reddit", data=reddit)
+    def post_data(self, data):
+        r = requests.post(self.api_url + "data/reddit", data=data)
 
+        # Exception handling
         try:
             r.raise_for_status()
         except requests.exceptions.HTTPError as e:
