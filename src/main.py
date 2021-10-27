@@ -1,3 +1,7 @@
+from RedditAPI import RedditAPI
+import requests
+
 
 if __name__ == '__main__':
-    print('Hello World')
+    rAPI = RedditAPI()
+    rAPI.subreddit_stream("bitcoin")
