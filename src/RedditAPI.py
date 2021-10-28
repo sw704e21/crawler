@@ -1,6 +1,46 @@
 import praw
 import json
 import requests
+import pandas
+import tweepy
+import requests
+
+
+TWITTER_APP_KEY = "VVHRzSdTp6T35a04AJuqlr3SR"
+TWITTER_APP_SECRET = "83MFy2JuE3sbyLhqWtpKV7KoBLQ7EDQgFCWEXVQgNqf44cJaxD"
+TWITTER_KEY = "611585498-MgduwddC5tSVylz6CzUTMJKULy8qM6PJsdASvTtX"
+TWITTER_SECRET = "S7gX7cTaqfnfkenpG0C3PD0Fu0YGAMKEijgGsWmsE1OZV"
+
+
+class IDPrinter(tweepy.Stream):
+
+    def on_status(self, status):
+        # Transforms the Status object to a json object.
+        json_str = json.dumps(status._json)
+
+        # Converts the json Object to a Dict
+        aDict = json.loads(json_str)
+
+        # Creating the dictionary to pass to the sentiment analyzer
+        sub_dict = {}
+
+        # Creating the dict to pass onto the sentiment analyzer
+        user = aDict['user']
+
+        # Inserting/extracting values
+        sub_dict['title'] = ""
+        sub_dict['url'] = user['url']
+        sub_dict['selftext'] = aDict['text']
+        sub_dict['score'] = user['followers_count'] + aDict['favorite_count']
+        sub_dict['created_utc'] = aDict['created_at']
+        sub_dict['num_comments'] = aDict['retweet_count']
+
+        # Converting into a json object
+        submission_data = json.dump(sub_dict)
+
+        # Sending the json object
+        self.post_data(submission_data)
+
 
 
 def initialize_reddit():
@@ -10,8 +50,15 @@ def initialize_reddit():
     return reddit
 
 
-class RedditAPI:
+def initialize_twitter():
+    printer = IDPrinter(
+        TWITTER_APP_KEY, TWITTER_APP_SECRET,
+        TWITTER_KEY, TWITTER_SECRET
+    )
+    return printer
 
+
+class RedditAPI:
     # Specify the wanted fields from praw.submissions to be send through the API
     fields = ('title', 'url', 'selftext', 'score', 'created_utc', 'num_comments')
 
@@ -28,7 +75,6 @@ class RedditAPI:
         subreddit = initialize_reddit().subreddit(subreddit)
         # Loop over submissions for a given reddit
         for submission in subreddit.stream.submissions():
-
             self.submissions.add(submission)
 
             # Adding the specified submission fields to the json object
@@ -38,6 +84,18 @@ class RedditAPI:
             # posting submission data through the API
             submission_data = json.dump(sub_dict)
             self.post_data(submission_data)
+
+    def twitter_stream(self):
+        printer = initialize_twitter()
+
+        # Starting the actual stream
+
+        try:
+            printer.sample()
+        except printer.on_request_error as e:
+            print(e)
+        except printer.on_disconnect as e:
+            print(e)
 
     def post_data(self, data):
         r = requests.post(self.api_url + "data/reddit", data=data)
