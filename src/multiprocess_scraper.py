@@ -9,7 +9,6 @@ def start_crawler(reddit_name):
 
 class MultiProcessScraper:
 
-    
     def start_scrapers(self):
         if __name__ == '__main__':
             with open('subreddits.csv', newline='') as f:
