@@ -15,7 +15,6 @@ class MultiProcessScraper:
             with open('subreddits.csv', newline='') as f:
                 reader = csv.reader(f)
                 self.reddits_to_scrape = list(reader)
-            print(self.reddits_to_scrape)
             for reddit in self.reddits_to_scrape:
                 p = Process(target=start_crawler, args=(reddit),)
                 p.start()
