@@ -2,6 +2,7 @@ import csv
 from multiprocessing import Process
 from RedditAPI import RedditAPI
 
+
 def start_crawler(reddit_name):
     crawler = RedditAPI()
     crawler.subreddit_stream(reddit_name)
