@@ -6,7 +6,10 @@ def start_crawler(reddit_name):
     crawler = RedditAPI()
     crawler.subreddit_stream(reddit_name)
 
+
 class MultiProcessScraper:
+
+    
     def start_scrapers(self):
         if __name__ == '__main__':
             with open('subreddits.csv', newline='') as f:
