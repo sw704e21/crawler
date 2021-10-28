@@ -4,6 +4,7 @@ from RedditAPI import RedditAPI
 
 reddits_to_scrape = []
 
+
 def start_crawler(reddit_name):
     crawler = RedditAPI()
     crawler.subreddit_stream(reddit_name)
