@@ -2,13 +2,13 @@ import sys
 import csv
 import json
 import praw
+import requests
 import yaml
 import typer
 from datetime import datetime
-import requests
 
 # noinspection PyUnresolvedReferences
-# keep the import to have better error messages
+#import pretty_errors  # keep the import to have better error messages
 
 from os.path import join
 from pathlib import Path
@@ -25,8 +25,8 @@ class OutputManager:
     """
     Class used to collect and store data (submissions and comments)
     """
-    params_filename = "params.yaml"
     fields = ('title', 'url', 'selftext', 'score', 'created_utc', 'num_comments')
+    params_filename = "params.yaml"
 
     def __init__(self, output_dir: str, subreddit: str):
         self.submissions_list = []
@@ -34,7 +34,6 @@ class OutputManager:
         self.comments_list = []
         self.comments_raw_list = []
         self.run_id = datetime.today().strftime('%Y%m%d%H%M%S')
-        self.submissions = set()
 
         self.subreddit_dir = join(output_dir, subreddit)
         self.runtime_dir = join(self.subreddit_dir, self.run_id)
@@ -49,26 +48,54 @@ class OutputManager:
         self.total_comments_counter = 0
         self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
 
+        for path in [self.submissions_output,
+                     self.sub_raw_output,
+                     self.comments_output,
+                     self.comments_raw_output]:
+            Path(path).mkdir(parents=True, exist_ok=True)
+
     def reset_lists(self):
         self.submissions_list = []
         self.submissions_raw_list = []
         self.comments_list = []
         self.comments_raw_list = []
 
-    def store(self, lap: str, data):
+    def store(self, lap: str):
         # Track total data statistics
-        self.total_submissions_counter += len(self.submissions_list)
-        self.total_comments_counter += len(self.comments_list)
+        dictlist_to_csv(join(self.submissions_output, f"{lap}.csv"), self.submissions_list)
 
+        if len(self.submissions_raw_list) > 0:
+            with open(join(self.sub_raw_output, f"{lap}.njson"), "a", encoding="utf-8") as f:
+                f.write("\n".join(json.dumps(row) for row in self.submissions_raw_list))
 
-        # Store the collected data
-        # dictlist_to_csv(join(self.submissions_output, f"{lap}.csv"), self.submissions_list)
-        # dictlist_to_csv(join(self.comments_output, f"{lap}.csv"), self.comments_list)
+    def post_data(self, data):
+        r = requests.post(self.api_url + "data", data=data)
+        print(data)
 
-        to_dict = vars(data)
-        sub_dict = {field: to_dict[field] for field in self.fields}
-        sub_dict['created_utc'] *= 1000
-        self.post_data(sub_dict)
+        # Exception handling
+        try:
+            r.raise_for_status()
+            print(r)
+        except requests.exceptions.HTTPError as e:
+            print(e)
+
+    def store_params(self, params: dict):
+        with open(self.params_path, "w", encoding="utf-8") as f:
+            yaml.dump(params, f)
+
+    def load_params(self) -> dict:
+        with open(self.params_path, "r", encoding="utf-8") as f:
+            params = yaml.load(f, yaml.FullLoader)
+        return params
+
+    def enrich_and_store_params(self, utc_older: int, utc_newer: int):
+        params = self.load_params()
+        params["utc_older"] = utc_older
+        params["utc_newer"] = utc_newer
+        params["total_comments_counter"] = self.total_comments_counter
+        params["total_submissions_counter"] = self.total_submissions_counter
+        params["total_counter"] = self.total_comments_counter + self.total_submissions_counter
+        self.store_params(params)
 
 
 def dictlist_to_csv(file_path: str, dictionaries_list: List[dict]):
@@ -99,7 +126,7 @@ def init_locals(debug: str,
     direction = "after" if utc_upper_bound else "before"
     output_manager = OutputManager(output_dir, subreddit)
 
-
+    output_manager.store_params(run_args)
     return direction, output_manager
 
 
@@ -135,17 +162,7 @@ def utc_range_calculator(utc_received: int,
 
     return utc_lower_bound, utc_upper_bound
 
-def post_data(self, data):
-    r = requests.post(self.api_url + "data", data=data)
-    print(data)
 
-    # Exception handling
-    try:
-        r.raise_for_status()
-        print(r)
-    except requests.exceptions.HTTPError as e:
-        print(e)
-            
 def comments_fetcher(sub, output_manager, reddit_api, comments_cap):
     """
     Comments fetcher
@@ -173,22 +190,22 @@ def comments_fetcher(sub, output_manager, reddit_api, comments_cap):
         output_manager.comments_list.append(comment_useful_data)
 
 
-def submission_fetcher(sub, output_manager: OutputManager, reddit_api):
+def submission_fetcher(sub, output_manager: OutputManager):
     """
     Get and store reddit submission info
     """
     # Sometimes the submission doesn't have the selftext
+    self_text_normalized = sub.selftext.replace('\n', '\\n') if hasattr(sub, "selftext") else "<not selftext available>"
 
-    submission_rich_data = reddit_api.submission(id=sub.id)
-    for submission in submission_rich_data:
-        to_dict = vars(submission)
-        sub_dict = {field: to_dict[field] for field in self.fields}
-        sub_dict['created_utc'] *= 1000
-        # posting submission data through the API
-        self.post_data(sub_dict)
-
-    # output_manager.submissions_list.append(submission_useful_data)
-    # output_manager.submissions_raw_list.append(sub.__dict__)
+    submission_useful_data = {
+        "id": sub.id,
+        "created_utc": sub.created_utc,
+        "title": sub.title.replace('\n', '\\n'),
+        "selftext": self_text_normalized,
+        "full_link": sub.full_link,
+    }
+    output_manager.submissions_list.append(submission_useful_data)
+    output_manager.submissions_raw_list.append(sub.d_)
 
 
 class HelpMessages:
@@ -211,8 +228,7 @@ class HelpMessages:
                    f"`comments_cap` under the hood will be passed directly to `replace_more` function as " \
                    f"`limit` parameter. For more info see the README and visit {help_praw_replace_more_url}."
 
- 
-            
+
 # noinspection PyTypeChecker
 @Timer(name="main", text="Total downloading time: {minutes:.1f}m", logger=logger.info)
 def main(subreddit: str = Argument(..., help=HelpMessages.subreddit),
@@ -270,8 +286,7 @@ def main(subreddit: str = Argument(..., help=HelpMessages.subreddit),
                 logger.debug(f"New submission `{sub.full_link}` - created_utc: {sub.created_utc}")
 
                 # Fetch the submission data
-                submission_fetcher(sub,out_manager, reddit_api)
-
+                submission_fetcher(sub, out_manager)
 
                 # Fetch the submission's comments
                 comments_fetcher(sub, out_manager, reddit_api, comments_cap)
@@ -280,10 +295,6 @@ def main(subreddit: str = Argument(..., help=HelpMessages.subreddit),
                 utc_lower_bound, utc_upper_bound = utc_range_calculator(sub.created_utc,
                                                                         utc_upper_bound,
                                                                         utc_lower_bound)
-
-
-
-
             # Store data (submission and comments)
             out_manager.store(lap)
 
