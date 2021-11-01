@@ -34,7 +34,7 @@ class RedditAPI:
             # Adding the specified submission fields to the json object
             to_dict = vars(submission)
             sub_dict = {field: to_dict[field] for field in self.fields}
-
+            sub_dict['source'] = subreddit
             # posting submission data through the API
             submission_data = json.dump(sub_dict)
             self.post_data(submission_data)
