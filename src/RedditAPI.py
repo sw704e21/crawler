@@ -20,7 +20,6 @@ class RedditAPI:
         self.submissions = set()
         self.list_of_items = []
         self.seen_submissions = set()
-        self.fields
         self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
 
     def subreddit_stream(self, subreddit):
@@ -36,7 +35,6 @@ class RedditAPI:
             sub_dict = {field: to_dict[field] for field in self.fields}
             sub_dict['created_utc'] *= 1000
             # posting submission data through the API
-            submission_data = json.dumps(sub_dict)
             self.post_data(sub_dict)
 
     def post_data(self, data):
