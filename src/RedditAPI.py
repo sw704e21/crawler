@@ -33,6 +33,7 @@ class RedditAPI:
             to_dict = vars(submission)
             sub_dict = {field: to_dict[field] for field in self.fields}
             sub_dict['created_utc'] *= 1000
+            sub_dict['source'] = subreddit
             # posting submission data through the API
             self.post_data(sub_dict)
 
