@@ -8,7 +8,7 @@ TWITTER_KEY = "611585498-MgduwddC5tSVylz6CzUTMJKULy8qM6PJsdASvTtX"
 TWITTER_SECRET = "S7gX7cTaqfnfkenpG0C3PD0Fu0YGAMKEijgGsWmsE1OZV"
 
 
-class IDPrinter(tweepy.Stream):
+class TwitterAPI(tweepy.Stream):
 
     def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret, api_url=""):
         super().__init__(consumer_key, consumer_secret, access_token, access_token_secret)
