@@ -1,7 +1,6 @@
 import praw
 import json
 import requests
-import tweepy
 from src.TwitterAPI import IDPrinter
 
 TWITTER_APP_KEY = "VVHRzSdTp6T35a04AJuqlr3SR"
