@@ -1,7 +1,6 @@
 import praw
 import json
 import requests
-import pandas
 import tweepy
 import requests
 
