@@ -67,7 +67,7 @@ class TwitterAPI(tweepy.Stream):
 
 
 def initialize_twitter(url):
-    printer = IDPrinter(
+    printer = TwitterAPI(
         TWITTER_APP_KEY, TWITTER_APP_SECRET,
         TWITTER_KEY, TWITTER_SECRET, url
     )
