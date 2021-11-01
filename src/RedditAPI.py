@@ -5,7 +5,6 @@ import pandas
 import tweepy
 import requests
 
-
 TWITTER_APP_KEY = "VVHRzSdTp6T35a04AJuqlr3SR"
 TWITTER_APP_SECRET = "83MFy2JuE3sbyLhqWtpKV7KoBLQ7EDQgFCWEXVQgNqf44cJaxD"
 TWITTER_KEY = "611585498-MgduwddC5tSVylz6CzUTMJKULy8qM6PJsdASvTtX"
@@ -13,6 +12,10 @@ TWITTER_SECRET = "S7gX7cTaqfnfkenpG0C3PD0Fu0YGAMKEijgGsWmsE1OZV"
 
 
 class IDPrinter(tweepy.Stream):
+
+    def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret, redditAPI=""):
+        super().__init__(consumer_key, consumer_secret, access_token, access_token_secret)
+        self.redditAPI = redditAPI
 
     def on_status(self, status):
         # Transforms the Status object to a json object.
@@ -36,11 +39,13 @@ class IDPrinter(tweepy.Stream):
         sub_dict['num_comments'] = aDict['retweet_count']
 
         # Converting into a json object
-        submission_data = json.dump(sub_dict)
+        submission_data = json.dumps(sub_dict)
 
         # Sending the json object
-        self.post_data(submission_data)
+        self.redditAPI.post_data(submission_data)
 
+    def on_error(self, status):
+        print(status)
 
 
 def initialize_reddit():
@@ -69,6 +74,7 @@ class RedditAPI:
         self.seen_submissions = set()
         self.fields
         self.api_url = ""
+        self.printer = initialize_twitter()
 
     def subreddit_stream(self, subreddit):
 
@@ -86,15 +92,14 @@ class RedditAPI:
             self.post_data(submission_data)
 
     def twitter_stream(self):
-        printer = initialize_twitter()
 
         # Starting the actual stream
 
         try:
-            printer.sample()
-        except printer.on_request_error as e:
+            self.printer.sample()
+        except self.printer.on_request_error as e:
             print(e)
-        except printer.on_disconnect as e:
+        except self.printer.on_disconnect as e:
             print(e)
 
     def post_data(self, data):
@@ -105,3 +110,8 @@ class RedditAPI:
             r.raise_for_status()
         except requests.exceptions.HTTPError as e:
             print(e)
+
+
+redditAPI = RedditAPI()
+redditAPI.printer.redditAPI = redditAPI
+redditAPI.twitter_stream()
