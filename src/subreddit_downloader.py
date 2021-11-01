@@ -8,7 +8,7 @@ import typer
 from datetime import datetime
 
 # noinspection PyUnresolvedReferences
-#import pretty_errors  # keep the import to have better error messages
+# import pretty_errors  # keep the import to have better error messages
 
 from os.path import join
 from pathlib import Path
@@ -211,7 +211,8 @@ def submission_fetcher(sub, output_manager: OutputManager):
 class HelpMessages:
     help_reddit_url = "https://github.com/reddit-archive/reddit/wiki/OAuth2"
     help_reddit_agent_url = "https://github.com/reddit-archive/reddit/wiki/API"
-    help_praw_replace_more_url = "https://asyncpraw.readthedocs.io/en/latest/code_overview/other/commentforest.html#asyncpraw.models.comment_forest.CommentForest.replace_more"
+    help_praw_replace_more_url = "https://asyncpraw.readthedocs.io/en/latest/code_overview/other/co" \
+                                 "mmentforest.html#asyncpraw.models.comment_forest.CommentForest.replace_more"
 
     subreddit = "The subreddit name"
     output_dir = "Optional output directory"
@@ -278,8 +279,10 @@ def main(subreddit: str = Argument(..., help=HelpMessages.subreddit),
                                                                      limit=batch_size,
                                                                      sort='desc' if direction == "before" else 'asc',
                                                                      sort_type='created_utc',
-                                                                     after=utc_upper_bound if direction == "after" else None,
-                                                                     before=utc_lower_bound if direction == "before" else None,
+                                                                     after=utc_upper_bound if
+                                                                     direction == "after" else None,
+                                                                     before=utc_lower_bound if
+                                                                     direction == "before" else None,
                                                                      )
 
             for sub in submissions_generator:

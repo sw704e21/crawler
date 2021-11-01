@@ -1,11 +1,9 @@
-import praw
-import json
 import requests
-import typer
 
 
 class PostData:
     fields = ('title', 'url', 'selftext', 'score', 'created_utc', 'num_comments')
+
     def __init__(self):
         self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
 
@@ -32,7 +30,4 @@ class PostData:
 
 
 p = PostData()
-p.submission_handler(filepath='data/Bitcoin/20211101080140/submissions/raw/0.njson')
-
-
-
+p.submission_handler(filepath='...')
