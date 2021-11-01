@@ -1,7 +1,4 @@
-import praw
 import json
-import requests
-import tweepy
 
 
 class IDPrinter(tweepy.Stream):
