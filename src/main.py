@@ -1,6 +1,6 @@
-from RedditAPI import RedditAPI
+from multiprocess_scraper import MultiProcessScraper
 
 
 if __name__ == '__main__':
-    rAPI = RedditAPI()
-    rAPI.subreddit_stream("bitcoin")
+    manager = MultiProcessScraper()
+    manager.start_scrapers()
