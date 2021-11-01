@@ -1,5 +1,4 @@
 import praw
-import json
 import requests
 
 
@@ -20,8 +19,7 @@ class RedditAPI:
         self.submissions = set()
         self.list_of_items = []
         self.seen_submissions = set()
-        self.fields
-        self.api_url = ""
+        self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
 
     def subreddit_stream(self, subreddit):
 
@@ -34,16 +32,18 @@ class RedditAPI:
             # Adding the specified submission fields to the json object
             to_dict = vars(submission)
             sub_dict = {field: to_dict[field] for field in self.fields}
+            sub_dict['created_utc'] *= 1000
             sub_dict['source'] = subreddit
             # posting submission data through the API
-            submission_data = json.dump(sub_dict)
-            self.post_data(submission_data)
+            self.post_data(sub_dict)
 
     def post_data(self, data):
-        r = requests.post(self.api_url + "data/reddit", data=data)
+        r = requests.post(self.api_url + "data", data=data)
+        print(data)
 
         # Exception handling
         try:
             r.raise_for_status()
+            print(r)
         except requests.exceptions.HTTPError as e:
             print(e)
