@@ -2,7 +2,6 @@ import praw
 import json
 import requests
 import tweepy
-import requests
 
 TWITTER_APP_KEY = "VVHRzSdTp6T35a04AJuqlr3SR"
 TWITTER_APP_SECRET = "83MFy2JuE3sbyLhqWtpKV7KoBLQ7EDQgFCWEXVQgNqf44cJaxD"
