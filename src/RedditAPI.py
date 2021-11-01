@@ -1,5 +1,4 @@
 import praw
-import json
 import requests
 
 

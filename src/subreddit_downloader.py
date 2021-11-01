@@ -2,6 +2,7 @@ import sys
 import csv
 import json
 import praw
+import requests
 import yaml
 import typer
 from datetime import datetime
