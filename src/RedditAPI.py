@@ -10,7 +10,6 @@ def initialize_reddit():
 
 
 class RedditAPI:
-
     # Specify the wanted fields from praw.submissions to be send through the API
     fields = ('title', 'url', 'selftext', 'score', 'created_utc', 'num_comments')
 
@@ -26,7 +25,6 @@ class RedditAPI:
         subreddit = initialize_reddit().subreddit(subreddit)
         # Loop over submissions for a given reddit
         for submission in subreddit.stream.submissions():
-
             self.submissions.add(submission)
 
             # Adding the specified submission fields to the json object
