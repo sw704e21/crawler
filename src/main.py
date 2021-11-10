@@ -1,3 +1,6 @@
+from multiprocess_scraper import MultiProcessScraper
+
 
 if __name__ == '__main__':
-    print('Hello World')
+    manager = MultiProcessScraper()
+    manager.start_scrapers()

@@ -16,8 +16,8 @@ class MultiProcessScraper:
             self.reddits_to_scrape = list(reader)
 
     def start_scrapers(self):
-        if __name__ == '__main__':
-            for reddit in self.reddits_to_scrape:
-                print('Started thread')
-                p = Process(target=start_crawler, args=(reddit),)
-                p.start()
+        print("here")
+        for reddit in self.reddits_to_scrape:
+            print('Started thread')
+            p = Process(target=start_crawler, args=(reddit))
+            p.start()
