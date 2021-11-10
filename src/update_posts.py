@@ -1,7 +1,10 @@
 import praw
 import json
 import requests
-
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+import schedule
+import os
 def initialize_reddit():
     reddit = praw.Reddit(client_id='y9aowlfsW7dLZyFuyrpH-w',
                          client_secret='3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ',
@@ -21,12 +24,18 @@ class UpdatePosts:
         self.id_list = ""
         self.payload = json.dumps(self.incoming_submissions)
 
-    def patch_24h_old_posts(self, subreddit):
+    def schedule_24h(self):
+        schedule.every().day.at("14.00").do(patch_posts('BTC'))
+
+    def patch_posts(self, subreddit):
         r = requests.patch(self.api_url + f"coins/{subreddit}?age=1", params=self.payload)
         data = r.json()
         print(data)
 
 
+    def fetch_data(self, subreddit):
+        bool = fetching = False
+        main()
     def update_data(self, data):
         for submission in data:
             to_dict = vars(submission)
@@ -38,6 +47,14 @@ class UpdatePosts:
             print(sub_dict)
             # print(r)
             # print(self.payload)
+    '''
+    def add_day(self, today):
+        today_utc = today.astimezone(datetime.timezone.utc)
+        tz = today.tzinfo
+        tomorrow_utc = today_utc + datetime.timedelta(days=1)
+        tomorrow_utc_tz = tomorrow_utc.astimezone(tz)
+        return tomorrow_utc_tz
+    '''
 
 up = UpdatePosts()
 up.get_24h_old_posts('btc')
