@@ -33,7 +33,7 @@ class OutputManager:
         self.submissions_raw_list = []
         self.comments_list = []
         self.comments_raw_list = []
-        self.run_id = datetime.today().strftime('%Y%m%d%H%M%S')
+        self.run_id = datetime.today().strftime('%Y%m%d')
 
         self.subreddit_dir = join(output_dir, subreddit)
         self.runtime_dir = join(self.subreddit_dir, self.run_id)
@@ -65,19 +65,9 @@ class OutputManager:
         dictlist_to_csv(join(self.submissions_output, f"{lap}.csv"), self.submissions_list)
 
         if len(self.submissions_raw_list) > 0:
-            with open(join(self.sub_raw_output, f"{lap}.njson"), "a", encoding="utf-8") as f:
-                f.write("\n".join(json.dumps(row) for row in self.submissions_raw_list))
+            with open(join(self.submissions_output, f"{lap}.njson"), "a", encoding="utf-8") as f:
+                json.dump(self.submissions_list, f)
 
-    def post_data(self, data):
-        r = requests.post(self.api_url + "data", data=data)
-        print(data)
-
-        # Exception handling
-        try:
-            r.raise_for_status()
-            print(r)
-        except requests.exceptions.HTTPError as e:
-            print(e)
 
     def store_params(self, params: dict):
         with open(self.params_path, "w", encoding="utf-8") as f:
@@ -196,13 +186,14 @@ def submission_fetcher(sub, output_manager: OutputManager):
     """
     # Sometimes the submission doesn't have the selftext
     self_text_normalized = sub.selftext.replace('\n', '\\n') if hasattr(sub, "selftext") else "<not selftext available>"
-
+    fields = ('title', 'url', 'selftext', 'score', 'created_utc', 'num_comments')
     submission_useful_data = {
-        "id": sub.id,
-        "created_utc": sub.created_utc,
         "title": sub.title.replace('\n', '\\n'),
-        "selftext": self_text_normalized,
         "full_link": sub.full_link,
+        "score": sub.score,
+        "created_utc": sub.created_utc,
+        "selftext": self_text_normalized,
+
     }
     output_manager.submissions_list.append(submission_useful_data)
     output_manager.submissions_raw_list.append(sub.d_)
@@ -230,16 +221,17 @@ class HelpMessages:
                    f"`limit` parameter. For more info see the README and visit {help_praw_replace_more_url}."
 
 
+
 # noinspection PyTypeChecker
 @Timer(name="main", text="Total downloading time: {minutes:.1f}m", logger=logger.info)
-def main(subreddit: str = Argument(..., help=HelpMessages.subreddit),
+def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
          output_dir: str = Option("./data/", help=HelpMessages.output_dir),
          batch_size: int = Option(10, help=HelpMessages.batch_size),
          laps: int = Option(3, help=HelpMessages.laps),
          reddit_id: str = Option(..., help=HelpMessages.reddit_id),
          reddit_secret: str = Option(..., help=HelpMessages.reddit_secret),
          reddit_username: str = Option(..., help=HelpMessages.reddit_username),
-         utc_after: Optional[str] = Option(None, help=HelpMessages.utc_before),
+         utc_after: Optional[str] = Option(None, help=HelpMessages.utc_after),
          utc_before: Optional[str] = Option(None, help=HelpMessages.utc_before),
          comments_cap: Optional[int] = Option(None, help=HelpMessages.comments_cap),
          debug: bool = Option(False, help=HelpMessages.debug),
@@ -311,4 +303,4 @@ def main(subreddit: str = Argument(..., help=HelpMessages.subreddit),
 
 
 if __name__ == '__main__':
-    typer.run(main)
+    typer.run(downloader)

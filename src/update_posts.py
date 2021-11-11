@@ -3,8 +3,13 @@ import json
 import requests
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-import schedule
+# import schedule
 import os
+from typer import Option
+from subreddit_downloader import downloader
+import typer
+
+
 def initialize_reddit():
     reddit = praw.Reddit(client_id='y9aowlfsW7dLZyFuyrpH-w',
                          client_secret='3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ',
@@ -23,19 +28,12 @@ class UpdatePosts:
         self.subreddit = ""
         self.id_list = ""
         self.payload = json.dumps(self.incoming_submissions)
+        self.run_id = datetime.today().strftime('%Y%m%d%H')
 
-    def schedule_24h(self):
-        schedule.every().day.at("14.00").do(patch_posts('BTC'))
-
-    def patch_posts(self, subreddit):
-        r = requests.patch(self.api_url + f"coins/{subreddit}?age=1", params=self.payload)
-        data = r.json()
-        print(data)
-
-
-    def fetch_data(self, subreddit):
+    def download_data(self, subreddit):
         bool = fetching = False
-        main()
+        typer.run(downloader(subreddit=subreddit, output_dir="./data/", batch_size=1, laps=1, reddit_id="y9aowlfsW7dLZyFuyrpH-w", reddit_secret="3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ", reddit_username="Huften", utc_after=1636539342))
+
     def update_data(self, data):
         for submission in data:
             to_dict = vars(submission)
@@ -47,6 +45,17 @@ class UpdatePosts:
             print(sub_dict)
             # print(r)
             # print(self.payload)
+
+    def fetch_data(self):
+        f = open('data/Bitcoin/20211111/submissions/0.njson', "r")
+        data = json.load(f)
+        for i in data['title']:
+            print(i)
+        f.close()
+
+        # with open("data/Bitcoin/20211111/submissions/0.njson", 'r') as f:
+
+
     '''
     def add_day(self, today):
         today_utc = today.astimezone(datetime.timezone.utc)
@@ -56,5 +65,9 @@ class UpdatePosts:
         return tomorrow_utc_tz
     '''
 
-up = UpdatePosts()
-up.get_24h_old_posts('btc')
+if __name__ == "__main__":
+    up = UpdatePosts()
+    # up.download_data("Bitcoin")
+    up.fetch_data()
+
+
