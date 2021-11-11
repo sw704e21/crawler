@@ -66,7 +66,7 @@ class MultiProcessScraper:
         return b''.join(total_data)
 
     def run(self):
-        #self.start_scrapers()
+        self.start_scrapers()
         print(self.reddits_to_scrape)
         print(f'Now listening on {self.host}:{self.port}')
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
