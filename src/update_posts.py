@@ -6,8 +6,9 @@ from dateutil.relativedelta import relativedelta
 # import schedule
 import os
 from typer import Option
-from subreddit_downloader import downloader
 import typer
+import time
+import datetime
 
 
 def initialize_reddit():
@@ -19,7 +20,7 @@ def initialize_reddit():
 class UpdatePosts:
 
     # Specify the wanted fields from praw.submissions to be send through the API
-    fields = ('title', 'url', 'selftext', 'score', 'created_utc', 'num_comments')
+    fields = ('title', 'full_link', 'selftext', 'score', 'created_utc', 'num_comments')
 
     def __init__(self):
         self.incoming_submissions = []
@@ -28,36 +29,100 @@ class UpdatePosts:
         self.subreddit = ""
         self.id_list = ""
         self.payload = json.dumps(self.incoming_submissions)
-        self.run_id = datetime.today().strftime('%Y%m%d%H')
+        self.fetching = False
+        self.run_id = ""
+        self.laps = 0
 
-    def download_data(self, subreddit):
-        bool = fetching = False
-        timecode = 1609459201
+    def update_posts_daily(self, list):
+        timecode = self.past_24h_unix()
+        timeago = self.past_24h()
+        self.laps = 3
+        for j in list:
+            self.download_data(j, timecode, timeago, 3, 3)
+
+            self.update_data(timeago, j)
+
+
+
+    def download_data(self, subreddit, timecode, timeago, batch_size, laps):
+        self.run_id = timeago
+        self.laps = laps
+
         # typer.run(downloader(subreddit=subreddit, output_dir="./data/", batch_size=1, laps=1, reddit_id="y9aowlfsW7dLZyFuyrpH-w", reddit_secret="3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ", reddit_username="Huften", utc_after=1636539342))
-        os.system(f"python subreddit_downloader.py {subreddit} --batch-size 2 --laps 2 "
+        os.system(f"python subreddit_downloader.py {subreddit} --batch-size {batch_size} --laps {laps} "
                   f"--reddit-id y9aowlfsW7dLZyFuyrpH-w --reddit-secret 3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ "
-                  f"--reddit-username Huften --utc-after {timecode}")
+                  f"--reddit-username Huften --utc-after {timecode} --run-id {timeago}")
 
-    def update_data(self, data):
+    def update_data(self, id, subreddit):
+        data = self.fetch_data(id, subreddit)
+        self.run_id = datetime.datetime.today().strftime('%Y%m%d%H')
         for submission in data:
-            to_dict = vars(submission)
-            url = submission['url']
-            submission_updated = initialize_reddit().submission(url=url)
-            submission['score'] = submission_updated.score
-            submission['num_comments'] = submission_updated.num_comments
-            sub_dict = {field: to_dict[field] for field in self.fields}
-            print(sub_dict)
-            # print(r)
-            # print(self.payload)
+            url = submission['full_link']
+            num_comments = submission['num_comments']
+            score = submission['score']
+            interactions = int(num_comments) + int(score)
+            patch_data(submission_updated, interactions, url)
 
-    def fetch_data(self):
-        f = open('data/Bitcoin/20211111/submissions/0.njson', "r")
+    def patch_data(self, url, interactions):
+        payload = {'url': url, 'interactions': interactions}
+        r = requests.patch(api_url, params=payload)
+        try:
+            r.raise_for_status()
+            print(r)
+        except requests.exceptions.HTTPError as e:
+            print(e)
+
+    def fetch_data(self, id, subreddit):
+        data_final = []
+
+        for i in range(self.laps):
+           try:
+               f = open(f'data/{subreddit}/{id}/submissions/{i}.njson', "r")
+               data = json.load(f)
+               f.close()
+               data_final.extend(data)
+           except IOError as e:
+               print('Operation failed: %s' % e.strerror)
+
+        return data_final
+
+    def fetch_dataKEK(self):
+        f = open('data/Bitcoin/20211112/submissions/0.njson', "r")
         data = json.load(f)
-        for i in data['title']:
-            print(i)
+        print(data)
         f.close()
+        return data
 
-        # with open("data/Bitcoin/20211111/submissions/0.njson", 'r') as f:
+    def past_days_unix(self, days):
+        now = datetime.datetime.now()
+        unix_timestamp = (time.mktime(now.timetuple()))
+        yday = time.localtime(unix_timestamp - (days * 86400))
+
+        return yday
+
+    def past_24h_unix(self):
+        now = datetime.datetime.now()
+        unix_timestamp = (time.mktime(now.timetuple()))
+        yday = int((unix_timestamp - 86400))
+        return yday
+
+    def past_hours_unix(self, hours):
+        now = datetime.datetime.now()
+        unix_timestamp = (time.mktime(now.timetuple()))
+        hour_ago = time.localtime(unix_timestamp - (hours * 3600))
+
+        return hour_ago
+
+    def past_days(self, days):
+        return datetime.datetime.now() - datetime.timedelta(days=days)
+
+    def past_24h(self):
+        date = datetime.datetime.now() - datetime.timedelta(days=1)
+
+        return date.strftime("%A-%d-%B-%Y-%I:%M%p")
+
+    def past_hours(self, hours):
+        return datetime.datetime.now() - datetime.timedelta(hours=hours)
 
 
     '''
@@ -70,8 +135,12 @@ class UpdatePosts:
     '''
 
 if __name__ == "__main__":
+
     up = UpdatePosts()
-    up.download_data("Bitcoin")
-    # up.fetch_data()
+    # up.download_data("Bitcoin")
+    # up.update_data()
+    # up.past_24h()
+    up.update_posts_daily(["shibainucoin", "dogelon", "etherum", "dogecoin", "bitcoin"])
+    # up.past_24h_unix()
 
 
