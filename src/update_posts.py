@@ -32,7 +32,11 @@ class UpdatePosts:
 
     def download_data(self, subreddit):
         bool = fetching = False
-        typer.run(downloader(subreddit=subreddit, output_dir="./data/", batch_size=1, laps=1, reddit_id="y9aowlfsW7dLZyFuyrpH-w", reddit_secret="3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ", reddit_username="Huften", utc_after=1636539342))
+        timecode = 1609459201
+        # typer.run(downloader(subreddit=subreddit, output_dir="./data/", batch_size=1, laps=1, reddit_id="y9aowlfsW7dLZyFuyrpH-w", reddit_secret="3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ", reddit_username="Huften", utc_after=1636539342))
+        os.system(f"python subreddit_downloader.py {subreddit} --batch-size 2 --laps 2 "
+                  f"--reddit-id y9aowlfsW7dLZyFuyrpH-w --reddit-secret 3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ "
+                  f"--reddit-username Huften --utc-after {timecode}")
 
     def update_data(self, data):
         for submission in data:
@@ -67,7 +71,7 @@ class UpdatePosts:
 
 if __name__ == "__main__":
     up = UpdatePosts()
-    # up.download_data("Bitcoin")
-    up.fetch_data()
+    up.download_data("Bitcoin")
+    # up.fetch_data()
 
 
