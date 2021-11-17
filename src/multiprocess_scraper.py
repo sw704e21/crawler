@@ -1,10 +1,10 @@
-import csv
 import pickle
 import socket
 import sys
 import time
 from multiprocessing import Process
 from RedditAPI import RedditAPI
+import requests
 
 
 def start_crawler(reddit_name):
@@ -18,14 +18,14 @@ class MultiProcessScraper:
         self.host = host
         self.port = port
         self.processes = []
-        with open('subreddits.csv', newline='') as f:
-            reader = csv.reader(f)
-            self.reddits_to_scrape = list(reader)
+        self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
+        r = requests.get(self.api_url + "coins/all/names")
+        self.reddits_to_scrape = r.json()
 
     def start_scrapers(self):
         for reddit in self.reddits_to_scrape:
             print('Started thread')
-            p = Process(target=start_crawler, args=(reddit))
+            p = Process(target=start_crawler, args=([reddit]))
             p.start()
             self.processes.append(p)
 
