@@ -194,6 +194,7 @@ def submission_fetcher(sub, output_manager: OutputManager):
         "score": sub.score,
         "created_utc": sub.created_utc,
         "selftext": self_text_normalized,
+        "num_comments": sub.num_comments
 
     }
     output_manager.submissions_list.append(submission_useful_data)
