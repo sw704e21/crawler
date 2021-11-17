@@ -25,8 +25,8 @@ class RedditAPI:
         subreddit = initialize_reddit().subreddit(subreddit)
         reddit_url = "https://reddit.com"
         # Loop over submissions for a given reddit
-        for submission in subreddit.stream.submissions():
-            self.submissions.add(submission)
+        for submission in subreddit.stream.submissions(skip_existing=True):
+            #self.submissions.add(submission)
 
             # Adding the specified submission fields to the json object
             to_dict = vars(submission)
