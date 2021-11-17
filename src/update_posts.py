@@ -1,15 +1,9 @@
 import praw
-import json
 import requests
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
 import schedule
 import os
-from typer import Option
-import typer
 import time
-import datetime
-import shutil
 
 
 # Calculation of x amount of previous days, returned as unix timestamp.

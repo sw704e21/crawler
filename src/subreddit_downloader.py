@@ -1,11 +1,8 @@
 import sys
 import csv
-import json
 import praw
-import requests
 import yaml
 import typer
-from datetime import datetime
 
 # noinspection PyUnresolvedReferences
 # import pretty_errors  # keep the import to have better error messages
@@ -22,11 +19,11 @@ from prawcore.exceptions import NotFound
 
 from update_posts import UpdatePosts
 
+
 class OutputManager:
     """
     Class used to collect and store data (submissions and comments)
     """
-    fields = ('title', 'url', 'selftext', 'score', 'created_utc', 'num_comments')
     params_filename = "params.yaml"
 
     def __init__(self, output_dir: str, subreddit: str):
@@ -225,17 +222,17 @@ class HelpMessages:
 # noinspection PyTypeChecker
 @Timer(name="main", text="Total downloading time: {minutes:.1f}m", logger=logger.info)
 def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
-         output_dir: str = Option("./data/", help=HelpMessages.output_dir),
-         batch_size: int = Option(10, help=HelpMessages.batch_size),
-         laps: int = Option(3, help=HelpMessages.laps),
-         reddit_id: str = Option(..., help=HelpMessages.reddit_id),
-         reddit_secret: str = Option(..., help=HelpMessages.reddit_secret),
-         reddit_username: str = Option(..., help=HelpMessages.reddit_username),
-         utc_after: Optional[str] = Option(None, help=HelpMessages.utc_after),
-         utc_before: Optional[str] = Option(None, help=HelpMessages.utc_before),
-         comments_cap: Optional[int] = Option(None, help=HelpMessages.comments_cap),
-         debug: bool = Option(False, help=HelpMessages.debug),
-         ):
+               output_dir: str = Option("./data/", help=HelpMessages.output_dir),
+               batch_size: int = Option(10, help=HelpMessages.batch_size),
+               laps: int = Option(3, help=HelpMessages.laps),
+               reddit_id: str = Option(..., help=HelpMessages.reddit_id),
+               reddit_secret: str = Option(..., help=HelpMessages.reddit_secret),
+               reddit_username: str = Option(..., help=HelpMessages.reddit_username),
+               utc_after: Optional[str] = Option(None, help=HelpMessages.utc_after),
+               utc_before: Optional[str] = Option(None, help=HelpMessages.utc_before),
+               comments_cap: Optional[int] = Option(None, help=HelpMessages.comments_cap),
+               debug: bool = Option(False, help=HelpMessages.debug),
+               ):
     """
     Download all the submissions and relative comments from a subreddit.
     """
