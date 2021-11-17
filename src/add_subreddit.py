@@ -1,4 +1,3 @@
-import csv
 import sys
 import socket
 import pickle
@@ -8,9 +7,6 @@ PORT = 64000
 
 if __name__ == '__main__':
     new_reddit = ['reddit', sys.argv[1]]
-    with open('subreddits.csv', 'a', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow([new_reddit[1]])
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
         s.sendall(pickle.dumps(new_reddit))
