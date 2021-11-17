@@ -93,7 +93,6 @@ class UpdatePosts:
 
     # Looping through the downloaded submission data and updating num_comments and score for all the submissions.
     def update_data(self, data):
-        # data = self.fetch_data(id, subreddit)
         for submission in data:
             url = submission['full_link']
             update_submissions = initialize_reddit().submission(url=url)
