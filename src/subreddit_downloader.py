@@ -20,6 +20,7 @@ from codetiming import Timer
 from pushshift_py import PushshiftAPI
 from prawcore.exceptions import NotFound
 
+from update_posts import UpdatePosts
 
 class OutputManager:
     """
@@ -28,15 +29,16 @@ class OutputManager:
     fields = ('title', 'url', 'selftext', 'score', 'created_utc', 'num_comments')
     params_filename = "params.yaml"
 
-    def __init__(self, output_dir: str, subreddit: str, run_id: str):
+    def __init__(self, output_dir: str, subreddit: str):
         self.submissions_list = []
         self.submissions_raw_list = []
         self.comments_list = []
         self.comments_raw_list = []
         self.run_id = ""
+        self.data = []
 
         self.subreddit_dir = join(output_dir, subreddit)
-        self.runtime_dir = join(self.subreddit_dir, run_id)
+        self.runtime_dir = join(self.subreddit_dir, self.run_id)
 
         self.submissions_output = join(self.runtime_dir, "submissions")
         self.sub_raw_output = join(self.runtime_dir, "submissions", "raw")
@@ -60,14 +62,12 @@ class OutputManager:
         self.comments_list = []
         self.comments_raw_list = []
 
-    def store(self, lap: str):
+    def store(self):
         # Track total data statistics
-        dictlist_to_csv(join(self.submissions_output, f"{lap}.csv"), self.submissions_list)
 
         if len(self.submissions_raw_list) > 0:
-            with open(join(self.submissions_output, f"{lap}.njson"), "a", encoding="utf-8") as f:
-                json.dump(self.submissions_list, f)
-
+            print(self.submissions_list)
+            return self.submissions_list
 
     def store_params(self, params: dict):
         with open(self.params_path, "w", encoding="utf-8") as f:
@@ -103,7 +103,6 @@ def init_locals(debug: str,
                 subreddit: str,
                 utc_upper_bound: str,
                 utc_lower_bound: str,
-                run_id: str,
                 run_args: dict,
                 ) -> (str, OutputManager):
     assert not (utc_upper_bound and utc_lower_bound), "`utc_lower_bound` and " \
@@ -115,7 +114,7 @@ def init_locals(debug: str,
         logger.add(sys.stderr, level="INFO")
 
     direction = "after" if utc_upper_bound else "before"
-    output_manager = OutputManager(output_dir, subreddit, run_id)
+    output_manager = OutputManager(output_dir, subreddit)
 
     output_manager.store_params(run_args)
     return direction, output_manager
@@ -223,7 +222,6 @@ class HelpMessages:
                    f"`limit` parameter. For more info see the README and visit {help_praw_replace_more_url}."
 
 
-
 # noinspection PyTypeChecker
 @Timer(name="main", text="Total downloading time: {minutes:.1f}m", logger=logger.info)
 def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
@@ -237,7 +235,6 @@ def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
          utc_before: Optional[str] = Option(None, help=HelpMessages.utc_before),
          comments_cap: Optional[int] = Option(None, help=HelpMessages.comments_cap),
          debug: bool = Option(False, help=HelpMessages.debug),
-         run_id: Optional[str] = Option(None, help=HelpMessages.utc_before),
          ):
     """
     Download all the submissions and relative comments from a subreddit.
@@ -251,7 +248,6 @@ def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
                                          subreddit,
                                          utc_upper_bound,
                                          utc_lower_bound,
-                                         run_id,
                                          run_args=locals())
     pushshift_api, reddit_api = init_clients(reddit_id, reddit_secret, reddit_username)
     logger.info(f"Start download: "
@@ -261,6 +257,7 @@ def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
                 f"total submissions to fetch: {batch_size * laps}")
 
     # Start the gathering
+    up = UpdatePosts()
     for lap in range(laps):
         logger.debug(f"New lap start: {lap}")
         lap_message = f"Lap {lap}/{laps} completed in ""{minutes:.1f}m | " \
@@ -295,7 +292,7 @@ def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
                                                                         utc_upper_bound,
                                                                         utc_lower_bound)
             # Store data (submission and comments)
-            out_manager.store(lap)
+            up.update_data(out_manager.store())
 
             # Check the bounds
             assert utc_lower_bound < utc_upper_bound, f"utc_lower_bound '{utc_lower_bound}' should be " \
