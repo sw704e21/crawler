@@ -183,7 +183,7 @@ def submission_fetcher(sub, output_manager: OutputManager):
     """
     # Sometimes the submission doesn't have the selftext
     self_text_normalized = sub.selftext.replace('\n', '\\n') if hasattr(sub, "selftext") else "<not selftext available>"
-    fields = ('title', 'url', 'selftext', 'score', 'created_utc', 'num_comments')
+
     submission_useful_data = {
         "title": sub.title.replace('\n', '\\n'),
         "full_link": sub.full_link,
