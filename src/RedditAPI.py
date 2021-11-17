@@ -11,7 +11,7 @@ def initialize_reddit():
 
 class RedditAPI:
     # Specify the wanted fields from praw.submissions to be send through the API
-    fields = ('title', 'url', 'selftext', 'score', 'created_utc', 'num_comments')
+    fields = ('title', 'permalink', 'selftext', 'score', 'created_utc', 'num_comments')
 
     def __init__(self):
         self.headline = set()
@@ -23,6 +23,7 @@ class RedditAPI:
     def subreddit_stream(self, subreddit):
 
         subreddit = initialize_reddit().subreddit(subreddit)
+        reddit_url = "https://reddit.com"
         # Loop over submissions for a given reddit
         for submission in subreddit.stream.submissions():
             self.submissions.add(submission)
@@ -32,6 +33,7 @@ class RedditAPI:
             sub_dict = {field: to_dict[field] for field in self.fields}
             sub_dict['created_utc'] *= 1000
             sub_dict['source'] = subreddit.display_name
+            sub_dict['permalink'] = reddit_url + sub_dict['permalink']
             # posting submission data through the API
             self.post_data(sub_dict)
 
