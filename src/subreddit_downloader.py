@@ -1,11 +1,8 @@
 import sys
 import csv
-import json
 import praw
-import requests
 import yaml
 import typer
-from datetime import datetime
 
 # noinspection PyUnresolvedReferences
 # import pretty_errors  # keep the import to have better error messages
@@ -20,12 +17,13 @@ from codetiming import Timer
 from pushshift_py import PushshiftAPI
 from prawcore.exceptions import NotFound
 
+from update_posts import UpdatePosts
+
 
 class OutputManager:
     """
     Class used to collect and store data (submissions and comments)
     """
-    fields = ('title', 'url', 'selftext', 'score', 'created_utc', 'num_comments')
     params_filename = "params.yaml"
 
     def __init__(self, output_dir: str, subreddit: str):
@@ -33,7 +31,8 @@ class OutputManager:
         self.submissions_raw_list = []
         self.comments_list = []
         self.comments_raw_list = []
-        self.run_id = datetime.today().strftime('%Y%m%d%H%M%S')
+        self.run_id = ""
+        self.data = []
 
         self.subreddit_dir = join(output_dir, subreddit)
         self.runtime_dir = join(self.subreddit_dir, self.run_id)
@@ -60,24 +59,12 @@ class OutputManager:
         self.comments_list = []
         self.comments_raw_list = []
 
-    def store(self, lap: str):
+    def store(self):
         # Track total data statistics
-        dictlist_to_csv(join(self.submissions_output, f"{lap}.csv"), self.submissions_list)
 
         if len(self.submissions_raw_list) > 0:
-            with open(join(self.sub_raw_output, f"{lap}.njson"), "a", encoding="utf-8") as f:
-                f.write("\n".join(json.dumps(row) for row in self.submissions_raw_list))
-
-    def post_data(self, data):
-        r = requests.post(self.api_url + "data", data=data)
-        print(data)
-
-        # Exception handling
-        try:
-            r.raise_for_status()
-            print(r)
-        except requests.exceptions.HTTPError as e:
-            print(e)
+            print(self.submissions_list)
+            return self.submissions_list
 
     def store_params(self, params: dict):
         with open(self.params_path, "w", encoding="utf-8") as f:
@@ -198,11 +185,13 @@ def submission_fetcher(sub, output_manager: OutputManager):
     self_text_normalized = sub.selftext.replace('\n', '\\n') if hasattr(sub, "selftext") else "<not selftext available>"
 
     submission_useful_data = {
-        "id": sub.id,
-        "created_utc": sub.created_utc,
         "title": sub.title.replace('\n', '\\n'),
-        "selftext": self_text_normalized,
         "full_link": sub.full_link,
+        "score": sub.score,
+        "created_utc": sub.created_utc,
+        "selftext": self_text_normalized,
+        "num_comments": sub.num_comments
+
     }
     output_manager.submissions_list.append(submission_useful_data)
     output_manager.submissions_raw_list.append(sub.d_)
@@ -232,18 +221,18 @@ class HelpMessages:
 
 # noinspection PyTypeChecker
 @Timer(name="main", text="Total downloading time: {minutes:.1f}m", logger=logger.info)
-def main(subreddit: str = Argument(..., help=HelpMessages.subreddit),
-         output_dir: str = Option("./data/", help=HelpMessages.output_dir),
-         batch_size: int = Option(10, help=HelpMessages.batch_size),
-         laps: int = Option(3, help=HelpMessages.laps),
-         reddit_id: str = Option(..., help=HelpMessages.reddit_id),
-         reddit_secret: str = Option(..., help=HelpMessages.reddit_secret),
-         reddit_username: str = Option(..., help=HelpMessages.reddit_username),
-         utc_after: Optional[str] = Option(None, help=HelpMessages.utc_before),
-         utc_before: Optional[str] = Option(None, help=HelpMessages.utc_before),
-         comments_cap: Optional[int] = Option(None, help=HelpMessages.comments_cap),
-         debug: bool = Option(False, help=HelpMessages.debug),
-         ):
+def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
+               output_dir: str = Option("./data/", help=HelpMessages.output_dir),
+               batch_size: int = Option(10, help=HelpMessages.batch_size),
+               laps: int = Option(3, help=HelpMessages.laps),
+               reddit_id: str = Option(..., help=HelpMessages.reddit_id),
+               reddit_secret: str = Option(..., help=HelpMessages.reddit_secret),
+               reddit_username: str = Option(..., help=HelpMessages.reddit_username),
+               utc_after: Optional[str] = Option(None, help=HelpMessages.utc_after),
+               utc_before: Optional[str] = Option(None, help=HelpMessages.utc_before),
+               comments_cap: Optional[int] = Option(None, help=HelpMessages.comments_cap),
+               debug: bool = Option(False, help=HelpMessages.debug),
+               ):
     """
     Download all the submissions and relative comments from a subreddit.
     """
@@ -265,6 +254,7 @@ def main(subreddit: str = Argument(..., help=HelpMessages.subreddit),
                 f"total submissions to fetch: {batch_size * laps}")
 
     # Start the gathering
+    up = UpdatePosts()
     for lap in range(laps):
         logger.debug(f"New lap start: {lap}")
         lap_message = f"Lap {lap}/{laps} completed in ""{minutes:.1f}m | " \
@@ -299,7 +289,7 @@ def main(subreddit: str = Argument(..., help=HelpMessages.subreddit),
                                                                         utc_upper_bound,
                                                                         utc_lower_bound)
             # Store data (submission and comments)
-            out_manager.store(lap)
+            up.update_data(out_manager.store())
 
             # Check the bounds
             assert utc_lower_bound < utc_upper_bound, f"utc_lower_bound '{utc_lower_bound}' should be " \
@@ -311,4 +301,4 @@ def main(subreddit: str = Argument(..., help=HelpMessages.subreddit),
 
 
 if __name__ == '__main__':
-    typer.run(main)
+    typer.run(downloader)
