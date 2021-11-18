@@ -8,7 +8,7 @@ import time
 
 # Calculation of x amount of previous days, returned as unix timestamp.
 def past_days_unix(days):
-    now = datetime.datetime.now()
+    now = datetime.now()
     unix_timestamp = (time.mktime(now.timetuple()))
     daysago = time.localtime(unix_timestamp - (days * 86400))
     return daysago
@@ -16,7 +16,7 @@ def past_days_unix(days):
 
 # Calculation of the past 24 hours, returned as unix timestamp.
 def past_24h_unix():
-    now = datetime.datetime.now()
+    now = datetime.now()
     unix_timestamp = (time.mktime(now.timetuple()))
     yday = int((unix_timestamp - 86400))
     return yday
@@ -24,7 +24,7 @@ def past_24h_unix():
 
 # Calculation x amount of previous hours, returned as unix timestamp.
 def past_hours_unix(hours):
-    now = datetime.datetime.now()
+    now = datetime.now()
     unix_timestamp = (time.mktime(now.timetuple()))
     hour_ago = time.localtime(unix_timestamp - (hours * 3600))
     return hour_ago
@@ -60,7 +60,7 @@ class UpdatePosts:
 
     def daily_schedule(self):
         coins_list = self.get_tracked_subreddits()
-        schedule.every().day.at("00:00").do(self.update_posts_daily, list=coins_list)
+        schedule.every().day.at("13:00").do(self.update_posts_daily, list=coins_list)
 
     def weekly_schedule(self):
         coins_list = self.get_tracked_subreddits()
@@ -110,9 +110,3 @@ class UpdatePosts:
             print(r)
         except requests.exceptions.HTTPError as e:
             print(e)
-
-
-if __name__ == "__main__":
-
-    up = UpdatePosts()
-    up.scheduler()

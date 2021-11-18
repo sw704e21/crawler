@@ -47,12 +47,6 @@ class OutputManager:
         self.total_comments_counter = 0
         self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
 
-        for path in [self.submissions_output,
-                     self.sub_raw_output,
-                     self.comments_output,
-                     self.comments_raw_output]:
-            Path(path).mkdir(parents=True, exist_ok=True)
-
     def reset_lists(self):
         self.submissions_list = []
         self.submissions_raw_list = []
@@ -63,36 +57,7 @@ class OutputManager:
         # Track total data statistics
 
         if len(self.submissions_raw_list) > 0:
-            print(self.submissions_list)
             return self.submissions_list
-
-    def store_params(self, params: dict):
-        with open(self.params_path, "w", encoding="utf-8") as f:
-            yaml.dump(params, f)
-
-    def load_params(self) -> dict:
-        with open(self.params_path, "r", encoding="utf-8") as f:
-            params = yaml.load(f, yaml.FullLoader)
-        return params
-
-    def enrich_and_store_params(self, utc_older: int, utc_newer: int):
-        params = self.load_params()
-        params["utc_older"] = utc_older
-        params["utc_newer"] = utc_newer
-        params["total_comments_counter"] = self.total_comments_counter
-        params["total_submissions_counter"] = self.total_submissions_counter
-        params["total_counter"] = self.total_comments_counter + self.total_submissions_counter
-        self.store_params(params)
-
-
-def dictlist_to_csv(file_path: str, dictionaries_list: List[dict]):
-    if len(dictionaries_list) == 0:
-        dictionaries_list = [{}]
-    keys = dictionaries_list[0].keys()
-    with open(file_path, 'w', newline='', encoding="utf-8") as output_file:
-        dict_writer = csv.DictWriter(output_file, keys, dialect="excel")
-        dict_writer.writeheader()
-        dict_writer.writerows(dictionaries_list)
 
 
 def init_locals(debug: str,
@@ -113,7 +78,6 @@ def init_locals(debug: str,
     direction = "after" if utc_upper_bound else "before"
     output_manager = OutputManager(output_dir, subreddit)
 
-    output_manager.store_params(run_args)
     return direction, output_manager
 
 
@@ -296,7 +260,6 @@ def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
                                                       f"less than utc_upper_bound '{utc_upper_bound}'"
         logger.debug(f"utc_upper_bound: {utc_upper_bound} , utc_lower_bound: {utc_lower_bound}")
 
-    out_manager.enrich_and_store_params(utc_newer=utc_upper_bound, utc_older=utc_lower_bound)
     logger.info(f"Stop download: lap {laps}/{laps} [total]: {out_manager.total_comments_counter}")
 
 
