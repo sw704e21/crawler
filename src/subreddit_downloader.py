@@ -1,14 +1,11 @@
 import sys
-import csv
 import praw
-import yaml
 import typer
 
 # noinspection PyUnresolvedReferences
 # import pretty_errors  # keep the import to have better error messages
 
 from os.path import join
-from pathlib import Path
 from typer import Argument
 from typer import Option
 from typing import Optional, List
