@@ -60,7 +60,7 @@ class UpdatePosts:
 
     def daily_schedule(self):
         coins_list = self.get_tracked_subreddits()
-        schedule.every().day.at("13:00").do(self.update_posts_daily, list=coins_list)
+        schedule.every().day.at("12:00").do(self.update_posts_daily, list=coins_list)
 
     def weekly_schedule(self):
         coins_list = self.get_tracked_subreddits()
