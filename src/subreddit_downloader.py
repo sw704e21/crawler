@@ -8,7 +8,7 @@ import typer
 from os.path import join
 from typer import Argument
 from typer import Option
-from typing import Optional, List
+from typing import Optional
 from loguru import logger
 from codetiming import Timer
 from pushshift_py import PushshiftAPI
