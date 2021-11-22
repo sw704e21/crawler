@@ -10,9 +10,8 @@ import signal
 
 
 def start_crawler(reddit_name):
-    #crawler = RedditAPI()
-    #crawler.subreddit_stream(reddit_name)
-    time.sleep(50)
+    crawler = RedditAPI()
+    crawler.subreddit_stream(reddit_name)
 
 
 class MultiProcessScraper:
