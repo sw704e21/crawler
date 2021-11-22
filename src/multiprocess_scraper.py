@@ -18,6 +18,8 @@ class MultiProcessScraper:
         self.host = host
         self.port = port
         self.processes = []
+        #Keep a dictionary of {tracked subreddit: processid}
+        self.process_dict = {}
         self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
         r = requests.get(self.api_url + "coins/all/names")
         self.reddits_to_scrape = r.json()
@@ -28,6 +30,7 @@ class MultiProcessScraper:
             p = Process(target=start_crawler, args=([reddit]))
             p.start()
             self.processes.append(p)
+            self.process_dict[reddit] = p.pid
 
     def _recv_timeout(self, the_socket, timeout=2):
         # make socket non blocking
@@ -88,6 +91,17 @@ class MultiProcessScraper:
                         sys.exit()
                     data = pickle.loads(data)
                     source = data[0]
+                    if source == 'stop':
+                        if data[1] in self.process_dict:
+                            process_id = self.process_dict[data[1]]
+                            for p in self.processes:
+                                if p.pid == process_id:
+                                    p.kill()
+                                    self.processes.remove(p)
+                                    self.process_dict.pop(data[1])
+                                    conn.sendall(pickle.dumps('terminating ' + data[1]))
+                        else:
+                            conn.sendall(pickle.dumps(data[1] + ' is not being tracked'))
                     if source == 'reddit':
                         new_reddit = data[1]
                         print(new_reddit)
