@@ -1,3 +1,4 @@
+import os
 import pickle
 import socket
 import sys
@@ -5,11 +6,13 @@ import time
 from multiprocessing import Process
 from RedditAPI import RedditAPI
 import requests
+import signal
 
 
 def start_crawler(reddit_name):
-    crawler = RedditAPI()
-    crawler.subreddit_stream(reddit_name)
+    #crawler = RedditAPI()
+    #crawler.subreddit_stream(reddit_name)
+    time.sleep(50)
 
 
 class MultiProcessScraper:
@@ -93,13 +96,8 @@ class MultiProcessScraper:
                     source = data[0]
                     if source == 'stop':
                         if data[1] in self.process_dict:
-                            process_id = self.process_dict[data[1]]
-                            for p in self.processes:
-                                if p.pid == process_id:
-                                    p.kill()
-                                    self.processes.remove(p)
-                                    self.process_dict.pop(data[1])
-                                    conn.sendall(pickle.dumps('terminating ' + data[1]))
+                            os.kill(self.process_dict[data[1]], signal.SIGTERM)
+                            self.process_dict.pop(data[1])
                         else:
                             conn.sendall(pickle.dumps(data[1] + ' is not being tracked'))
                     if source == 'reddit':
