@@ -48,7 +48,7 @@ class UpdatePosts:
         return data
 
     def scheduler(self):
-        #self.test_schedule()
+        # self.test_schedule()
         self.daily_schedule()
         self.weekly_schedule()
         while True:
