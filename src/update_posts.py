@@ -8,7 +8,7 @@ import time
 
 # Calculation of x amount of previous days, returned as unix timestamp.
 def past_days_unix(days):
-    now = datetime.datetime.now()
+    now = datetime.now()
     unix_timestamp = (time.mktime(now.timetuple()))
     daysago = time.localtime(unix_timestamp - (days * 86400))
     return daysago
@@ -16,7 +16,7 @@ def past_days_unix(days):
 
 # Calculation of the past 24 hours, returned as unix timestamp.
 def past_24h_unix():
-    now = datetime.datetime.now()
+    now = datetime.now()
     unix_timestamp = (time.mktime(now.timetuple()))
     yday = int((unix_timestamp - 86400))
     return yday
@@ -24,7 +24,7 @@ def past_24h_unix():
 
 # Calculation x amount of previous hours, returned as unix timestamp.
 def past_hours_unix(hours):
-    now = datetime.datetime.now()
+    now = datetime.now()
     unix_timestamp = (time.mktime(now.timetuple()))
     hour_ago = time.localtime(unix_timestamp - (hours * 3600))
     return hour_ago
@@ -48,6 +48,7 @@ class UpdatePosts:
         return data
 
     def scheduler(self):
+        #self.test_schedule()
         self.daily_schedule()
         self.weekly_schedule()
         while True:
@@ -60,11 +61,11 @@ class UpdatePosts:
 
     def daily_schedule(self):
         coins_list = self.get_tracked_subreddits()
-        schedule.every().day.at("00:00").do(self.update_posts_daily, list=coins_list)
+        schedule.every().hour.do(self.update_posts_daily, list=coins_list)
 
     def weekly_schedule(self):
         coins_list = self.get_tracked_subreddits()
-        schedule.every().monday.do(self.update_posts_weekly, list=coins_list)
+        schedule.every().day.at("12:00").do(self.update_posts_weekly, list=coins_list)
 
     def update_posts_test(self, list):
         timecode = past_24h_unix()
@@ -81,7 +82,7 @@ class UpdatePosts:
     def update_posts_weekly(self, list):
         timecode = past_days_unix(7)
         for j in list:
-            self.download_data(j, timecode, 512, 21)
+            self.download_data(j, timecode, 512, 12)
 
     # Using the subreddit_downloader script
     def download_data(self, subreddit, timecode, batch_size, laps):
@@ -104,15 +105,9 @@ class UpdatePosts:
     # Creating a patch request that updates the interactions for coins in the database.
     def patch_data(self, url: str, interactions: int):
         payload = {'url': url, 'interactions': interactions}
-        r = requests.patch(self.api_url, params=payload)
+        r = requests.patch(self.api_url + "/", params=payload)
         try:
             r.raise_for_status()
             print(r)
         except requests.exceptions.HTTPError as e:
             print(e)
-
-
-if __name__ == "__main__":
-
-    up = UpdatePosts()
-    up.scheduler()

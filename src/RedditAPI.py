@@ -23,7 +23,7 @@ class RedditAPI:
     def subreddit_stream(self, subreddit):
 
         subreddit = initialize_reddit().subreddit(subreddit)
-        reddit_url = "https://reddit.com"
+        reddit_url = "https://www.reddit.com"
         # Loop over submissions for a given reddit
         for submission in subreddit.stream.submissions(skip_existing=True):
             # self.submissions.add(submission)
