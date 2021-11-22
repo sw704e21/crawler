@@ -48,6 +48,7 @@ class UpdatePosts:
         return data
 
     def scheduler(self):
+        #self.test_schedule()
         self.daily_schedule()
         self.weekly_schedule()
         while True:
@@ -60,11 +61,11 @@ class UpdatePosts:
 
     def daily_schedule(self):
         coins_list = self.get_tracked_subreddits()
-        schedule.every().day.at("12:00").do(self.update_posts_daily, list=coins_list)
+        schedule.every().hour.do(self.update_posts_daily, list=coins_list)
 
     def weekly_schedule(self):
         coins_list = self.get_tracked_subreddits()
-        schedule.every().monday.do(self.update_posts_weekly, list=coins_list)
+        schedule.every().day.at("12:00").do(self.update_posts_weekly, list=coins_list)
 
     def update_posts_test(self, list):
         timecode = past_24h_unix()
@@ -81,7 +82,7 @@ class UpdatePosts:
     def update_posts_weekly(self, list):
         timecode = past_days_unix(7)
         for j in list:
-            self.download_data(j, timecode, 512, 21)
+            self.download_data(j, timecode, 512, 12)
 
     # Using the subreddit_downloader script
     def download_data(self, subreddit, timecode, batch_size, laps):
@@ -104,7 +105,7 @@ class UpdatePosts:
     # Creating a patch request that updates the interactions for coins in the database.
     def patch_data(self, url: str, interactions: int):
         payload = {'url': url, 'interactions': interactions}
-        r = requests.patch(self.api_url, params=payload)
+        r = requests.patch(self.api_url + "/", params=payload)
         try:
             r.raise_for_status()
             print(r)
