@@ -10,6 +10,3 @@ if __name__ == '__main__':
     scheduler_process = Process(target=updating.scheduler)
     manager_process.start()
     scheduler_process.start()
-
-
-
