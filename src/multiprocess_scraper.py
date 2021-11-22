@@ -18,7 +18,7 @@ class MultiProcessScraper:
         self.host = host
         self.port = port
         self.processes = []
-        #Keep a dictionary of {tracked subreddit: processid}
+        # Keep a dictionary of {tracked subreddit: processid}
         self.process_dict = {}
         self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
         r = requests.get(self.api_url + "coins/all/names")
