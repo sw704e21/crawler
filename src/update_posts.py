@@ -88,7 +88,7 @@ class UpdatePosts:
     def download_data(self, subreddit, timecode, batch_size, laps):
         # Specifying the amount of laps so that when fetching the data, the correct amount of files will be read.
 
-        os.system(f"python subreddit_downloader.py {subreddit} --batch-size {batch_size} --laps {laps} "
+        os.system(f"python3 subreddit_downloader.py {subreddit} --batch-size {batch_size} --laps {laps} "
                   f"--reddit-id y9aowlfsW7dLZyFuyrpH-w --reddit-secret 3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ "
                   f"--reddit-username Huften --utc-after {timecode}")
 
