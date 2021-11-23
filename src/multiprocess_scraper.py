@@ -42,7 +42,7 @@ class MultiProcessScraper:
         for tag in tags_to_scrape:
             print("Started thread")
             # Creates a Process
-            p = Process(target=start_twitter_tag, args=(tag))
+            p = Process(target=start_twitter_tag, args=([tag], ['en']))
             p.start()
             self.processes.append(p)
 

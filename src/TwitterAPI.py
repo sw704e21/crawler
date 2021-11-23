@@ -47,13 +47,13 @@ class TwitterAPI(tweepy.Stream):
     def twitter_stream(self, keywords, languages):
 
         # Starting the actual stream
-        self.printer.filter.track = keywords
-        self.printer.filter.languages = languages
+        self.filter(track = keywords)
+        self.filter(languages = languages)
         try:
-            self.printer.sample()
-        except self.printer.on_request_error as e:
+            self.sample()
+        except self.on_request_error as e:
             print(e)
-        except self.printer.on_disconnect as e:
+        except self.on_disconnect as e:
             print(e)
 
     def post_data(self, data):
