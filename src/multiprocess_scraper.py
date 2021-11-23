@@ -128,7 +128,7 @@ class MultiProcessScraper:
                             self.tags_to_scrape.append(tag)
                         # A new process is started, starting a twitter_scraper, that listens on the tag.
                         self.twitter_process.stop()
-                        self.twitter_process = Process(target=start_twitter_tag, args=([tags_to_scrape]))
+                        self.twitter_process = Process(target=start_twitter_tag, args=([self.tags_to_scrape]))
                         self.twitter_process.start()
                         # Confirmation is sent back
                         conn.sendall(pickle.dumps('Added tag for tracking'))
