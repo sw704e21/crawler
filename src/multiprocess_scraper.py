@@ -14,6 +14,7 @@ def start_crawler(reddit_name):
     crawler = RedditAPI()
     crawler.subreddit_stream(reddit_name)
 
+
 def start_twitter_tag(tag):
     crawler = TwitterAPI().initialize_twitter()
     crawler.twitter_stream(tag)
@@ -125,7 +126,7 @@ class MultiProcessScraper:
                         new_twitter = data[1]
                         print(new_twitter)
                         # A new process is started, starting a twitter_scraper, that listens on the tag.
-                        p = Process(target=start_twitter, args=([new_twitter]))
+                        p = Process(target=start_twitter_tag, args=([new_twitter]))
                         p.start()
                         # The process is appended to the process list.
                         self.processes.append(p)
