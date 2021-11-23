@@ -15,11 +15,7 @@ class TwitterAPI(tweepy.Stream):
         self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
 
     def on_status(self, status):
-        # Transforms the Status object to a json object.
-        json_str = json.dumps(status._json)
-
-        # Converts the json Object to a Dict
-        aDict = json.loads(json_str)
+        aDict = status._json
 
         # Creating the dictionary to pass to the sentiment analyzer
         sub_dict = {}
