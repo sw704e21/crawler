@@ -18,6 +18,7 @@ def start_twitter_tag(tag):
     crawler = TwitterAPI().initialize_twitter()
     crawler.twitter_stream(tag)
 
+
 class MultiProcessScraper:
 
     def __init__(self, host='127.0.0.1', port=64000):
@@ -39,7 +40,7 @@ class MultiProcessScraper:
             p.start()
             self.processes.append(p)
             self.process_dict[reddit] = p.pid
-        for tag in tags_to_scrape:
+        for tag in self.tags_to_scrape:
             print("Started thread")
             # Creates a Process
             p = Process(target=start_twitter_tag, args=([tag], ['en']))

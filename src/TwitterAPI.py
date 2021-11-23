@@ -47,8 +47,8 @@ class TwitterAPI(tweepy.Stream):
     def twitter_stream(self, keywords, languages):
 
         # Starting the actual stream
-        self.filter(track = keywords)
-        self.filter(languages = languages)
+        self.filter(track=keywords)
+        self.filter(languages=languages)
         try:
             self.sample()
         except self.on_request_error as e:
@@ -64,6 +64,7 @@ class TwitterAPI(tweepy.Stream):
             r.raise_for_status()
         except requests.exceptions.HTTPError as e:
             print(e)
+
 
 def initialize_twitter():
     printer = TwitterAPI(
