@@ -7,11 +7,17 @@ from multiprocessing import Process
 from RedditAPI import RedditAPI
 import requests
 import signal
+import TwitterAPI
 
 
 def start_crawler(reddit_name):
     crawler = RedditAPI()
     crawler.subreddit_stream(reddit_name)
+
+
+def start_twitter_tag(tag):
+    crawler = TwitterAPI().initialize_twitter()
+    crawler.twitter_stream(tag)
 
 
 class MultiProcessScraper:
@@ -25,6 +31,9 @@ class MultiProcessScraper:
         self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
         r = requests.get(self.api_url + "coins/all/names")
         self.reddits_to_scrape = r.json()
+        r = requests.get(self.api_url + "tags/all/names")
+        self.tags_to_scrape = r.json()
+        self.twitter_process = None
 
     def start_scrapers(self):
         for reddit in self.reddits_to_scrape:
@@ -33,6 +42,11 @@ class MultiProcessScraper:
             p.start()
             self.processes.append(p)
             self.process_dict[reddit] = p.pid
+
+        print("Started thread")
+        # Creates a Process
+        self.twitter_process = Process(target=start_twitter_tag, args=(self.tags_to_scrape, ['en']))
+        self.twitter_process.start()
 
     def _recv_timeout(self, the_socket, timeout=2):
         # make socket non blocking
@@ -106,3 +120,15 @@ class MultiProcessScraper:
                         p.start()
                         self.processes.append(p)
                         conn.sendall(pickle.dumps('Added subreddit for tracking'))
+                    # A check is makde, if the data[0] specifies that this is a new twitter tag for tracking.
+                    elif source == 'twittertag':
+                        # If this is the case, the tag is extracted.
+                        new_tags = data[1]
+                        for tag in new_tags:
+                            self.tags_to_scrape.append(tag)
+                        # A new process is started, starting a twitter_scraper, that listens on the tag.
+                        self.twitter_process.stop()
+                        self.twitter_process = Process(target=start_twitter_tag, args=([self.tags_to_scrape]))
+                        self.twitter_process.start()
+                        # Confirmation is sent back
+                        conn.sendall(pickle.dumps('Added tag for tracking'))

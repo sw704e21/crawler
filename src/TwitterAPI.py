@@ -12,14 +12,10 @@ class TwitterAPI(tweepy.Stream):
 
     def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret, api_url=""):
         super().__init__(consumer_key, consumer_secret, access_token, access_token_secret)
-        self.api_url = api_url
+        self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
 
     def on_status(self, status):
-        # Transforms the Status object to a json object.
-        json_str = json.dumps(status._json)
-
-        # Converts the json Object to a Dict
-        aDict = json.loads(json_str)
+        aDict = status._json
 
         # Creating the dictionary to pass to the sentiment analyzer
         sub_dict = {}
@@ -29,7 +25,7 @@ class TwitterAPI(tweepy.Stream):
 
         # Inserting/extracting values
         sub_dict['title'] = ""
-        sub_dict['url'] = user['url']
+        sub_dict['permalink'] = user['url']
         sub_dict['selftext'] = aDict['text']
         sub_dict['score'] = user['followers_count'] + aDict['favorite_count']
         sub_dict['created_utc'] = aDict['created_at']
@@ -47,18 +43,18 @@ class TwitterAPI(tweepy.Stream):
     def twitter_stream(self, keywords, languages):
 
         # Starting the actual stream
-        self.printer.filter.track = keywords
-        self.printer.filter.languages = languages
+        self.filter(track=keywords)
+        self.filter(languages=languages)
         try:
-            self.printer.sample()
-        except self.printer.on_request_error as e:
+            self.sample()
+        except self.on_request_error as e:
             print(e)
-        except self.printer.on_disconnect as e:
+        except self.on_disconnect as e:
             print(e)
 
     def post_data(self, data):
-        r = requests.post(self.api_url + "data/reddit", data=data)
-
+        r = requests.post(self.api_url + "data", data=data)
+        print(data)
         # Exception handling
         try:
             r.raise_for_status()
@@ -66,9 +62,9 @@ class TwitterAPI(tweepy.Stream):
             print(e)
 
 
-def initialize_twitter(url):
+def initialize_twitter():
     printer = TwitterAPI(
         TWITTER_APP_KEY, TWITTER_APP_SECRET,
-        TWITTER_KEY, TWITTER_SECRET, url
+        TWITTER_KEY, TWITTER_SECRET
     )
     return printer
