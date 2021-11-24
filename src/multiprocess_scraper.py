@@ -31,7 +31,7 @@ class MultiProcessScraper:
         self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
         r = requests.get(self.api_url + "coins/all/names")
         self.reddits_to_scrape = r.json()
-        r = requests.get(self.api_url + "tags/all/names")
+        r = requests.get(self.api_url + "coins/all/names")
         self.tags_to_scrape = r.json()
         self.twitter_process = None
 
