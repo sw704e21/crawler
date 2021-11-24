@@ -30,7 +30,9 @@ class RedditAPI:
 
             # Adding the specified submission fields to the json object
             to_dict = vars(submission)
+            redditor = to_dict['author']
             sub_dict = {field: to_dict[field] for field in self.fields}
+            sub_dict['karma'] = redditor.link_karma + redditor.comment_karma
             sub_dict['created_utc'] *= 1000
             sub_dict['source'] = subreddit.display_name
             sub_dict['permalink'] = reddit_url + sub_dict['permalink']
