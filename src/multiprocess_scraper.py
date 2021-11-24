@@ -18,7 +18,7 @@ def start_crawler(reddit_name):
 def start_twitter_tag(tag, lang=None):
     if lang is None:
         lang = ['en']
-    crawler = TwitterAPI().initialize_twitter()
+    crawler = TwitterAPI.initialize_twitter()
     crawler.twitter_stream(tag, languages=lang)
 
 
