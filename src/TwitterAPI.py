@@ -30,6 +30,7 @@ class TwitterAPI(tweepy.Stream):
         sub_dict['score'] = user['followers_count'] + aDict['favorite_count']
         sub_dict['created_utc'] = aDict['created_at']
         sub_dict['num_comments'] = aDict['retweet_count']
+        sub_dict['karma'] = user['followers_count']
 
         # Converting into a json object
         submission_data = json.dumps(sub_dict)
@@ -54,7 +55,6 @@ class TwitterAPI(tweepy.Stream):
 
     def post_data(self, data):
         r = requests.post(self.api_url + "data", data=data)
-        print(data)
         # Exception handling
         try:
             r.raise_for_status()
