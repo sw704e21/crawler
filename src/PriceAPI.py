@@ -41,7 +41,6 @@ class PriceAPI:
             res = requests.post(self.cryptoAPI + '/price', json=body)
             print(res)
 
-
     def get_prices(self):
         headers = {'content-type': 'application/json', 'x-api-key': self.apikey}
         body = {"currency": 'USD', "sort": 'rank', "order": 'ascending', "offset": 0, "limit": 200, "meta": False}
