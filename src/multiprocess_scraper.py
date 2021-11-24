@@ -15,9 +15,11 @@ def start_crawler(reddit_name):
     crawler.subreddit_stream(reddit_name)
 
 
-def start_twitter_tag(tag):
+def start_twitter_tag(tag, lang=None):
+    if lang is None:
+        lang = ['en']
     crawler = TwitterAPI().initialize_twitter()
-    crawler.twitter_stream(tag)
+    crawler.twitter_stream(tag, languages=lang)
 
 
 class MultiProcessScraper:
@@ -127,8 +129,8 @@ class MultiProcessScraper:
                         for tag in new_tags:
                             self.tags_to_scrape.append(tag)
                         # A new process is started, starting a twitter_scraper, that listens on the tag.
-                        self.twitter_process.stop()
-                        self.twitter_process = Process(target=start_twitter_tag, args=([self.tags_to_scrape]))
+                        self.twitter_process.kill()
+                        self.twitter_process = Process(target=start_twitter_tag, args=([self.tags_to_scrape], ['en']))
                         self.twitter_process.start()
                         # Confirmation is sent back
                         conn.sendall(pickle.dumps('Added tag for tracking'))
