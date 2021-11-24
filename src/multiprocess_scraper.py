@@ -47,8 +47,8 @@ class MultiProcessScraper:
 
         print("Started thread")
         # Creates a Process
-        self.twitter_process = Process(target=start_twitter_tag, args=(self.tags_to_scrape, ['en']))
-        self.twitter_process.start()
+        # self.twitter_process = Process(target=start_twitter_tag, args=(self.tags_to_scrape, ['en']))
+        # self.twitter_process.start()
 
     def _recv_timeout(self, the_socket, timeout=2):
         # make socket non blocking
