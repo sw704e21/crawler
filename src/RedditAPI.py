@@ -11,7 +11,7 @@ def initialize_reddit():
 
 class RedditAPI:
     # Specify the wanted fields from praw.submissions to be send through the API
-    fields = ('title', 'permalink', 'selftext', 'score', 'created_utc', 'num_comments')
+    fields = ('title', 'permalink', 'selftext', 'score', 'created_utc', 'num_comments', 'karma')
 
     def __init__(self):
         self.headline = set()
@@ -30,6 +30,8 @@ class RedditAPI:
 
             # Adding the specified submission fields to the json object
             to_dict = vars(submission)
+            redditor = to_dict['author']
+            sub_dict['karma'] = redditor.link_karma
             sub_dict = {field: to_dict[field] for field in self.fields}
             sub_dict['created_utc'] *= 1000
             sub_dict['source'] = subreddit.display_name
