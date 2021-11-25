@@ -1,6 +1,7 @@
 import json
 import tweepy
 import requests
+import logging
 
 TWITTER_APP_KEY = "VVHRzSdTp6T35a04AJuqlr3SR"
 TWITTER_APP_SECRET = "83MFy2JuE3sbyLhqWtpKV7KoBLQ7EDQgFCWEXVQgNqf44cJaxD"
@@ -39,7 +40,7 @@ class TwitterAPI(tweepy.Stream):
         self.post_data(submission_data)
 
     def on_error(self, status):
-        print(status)
+        logging.error(status)
 
     def twitter_stream(self, keywords, languages):
 
@@ -49,9 +50,9 @@ class TwitterAPI(tweepy.Stream):
         try:
             self.sample()
         except self.on_request_error as e:
-            print(e)
+            logging.error(e)
         except self.on_disconnect as e:
-            print(e)
+            logging.error(e)
 
     def post_data(self, data):
         r = requests.post(self.api_url + "data", data=data)
@@ -59,7 +60,7 @@ class TwitterAPI(tweepy.Stream):
         try:
             r.raise_for_status()
         except requests.exceptions.HTTPError as e:
-            print(e)
+            logging.error(e)
 
 
 def initialize_twitter():

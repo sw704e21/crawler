@@ -1,5 +1,6 @@
 import socket
 import pickle
+import logging
 
 HOST = '127.0.0.1'
 PORT = 64000

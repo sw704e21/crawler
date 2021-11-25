@@ -4,6 +4,7 @@ from datetime import datetime
 import schedule
 import os
 import time
+import logging
 
 
 # Calculation of x amount of previous days, returned as unix timestamp.
@@ -108,6 +109,6 @@ class UpdatePosts:
         r = requests.patch(self.api_url + "/", params=payload)
         try:
             r.raise_for_status()
-            print(r)
+            logging.info(r)
         except requests.exceptions.HTTPError as e:
-            print(e)
+            logging.error(e)
