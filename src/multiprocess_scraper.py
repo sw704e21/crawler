@@ -24,7 +24,7 @@ def start_twitter_tag(tag, lang=None):
 
 class MultiProcessScraper:
 
-    def __init__(self, host='127.0.0.1', port=64000):
+    def __init__(self, host='0.0.0.0', port=64000):
         self.host = host
         self.port = port
         self.processes = []
