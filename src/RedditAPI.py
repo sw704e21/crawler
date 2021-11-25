@@ -43,10 +43,9 @@ class RedditAPI:
     def post_data(self, data):
         r = requests.post(self.api_url + "data", data=data)
 
-
         # Exception handling
         try:
             r.raise_for_status()
-            logging.info(f"{r.json()}")
+            logging.info(f"{r}")
         except requests.exceptions.HTTPError as e:
             logging.error(e)
