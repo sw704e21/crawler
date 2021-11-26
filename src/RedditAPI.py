@@ -3,6 +3,7 @@ import requests
 import logging
 logger = logging.getLogger("crawler")
 
+
 def initialize_reddit():
     reddit = praw.Reddit(client_id='y9aowlfsW7dLZyFuyrpH-w',
                          client_secret='3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ',

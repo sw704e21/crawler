@@ -5,6 +5,7 @@ import schedule
 import os
 import time
 import logging
+
 logger = logging.getLogger("downloader")
 
 
@@ -95,8 +96,8 @@ class UpdatePosts:
         logger.info("Starting download")
         try:
             os.system(f"python3 src/subreddit_downloader.py {subreddit} --batch-size {batch_size} --laps {laps} "
-                  f"--reddit-id y9aowlfsW7dLZyFuyrpH-w --reddit-secret 3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ "
-                  f"--reddit-username Huften --utc-after {timecode}")
+                      f"--reddit-id y9aowlfsW7dLZyFuyrpH-w --reddit-secret 3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ "
+                      f"--reddit-username Huften --utc-after {timecode}")
         except Exception as e:
             logger.error(e)
 

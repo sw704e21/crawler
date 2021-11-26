@@ -29,6 +29,7 @@ handler.setLevel(logging.DEBUG)
 handler.setFormatter(formatter)
 flogger.addHandler(handler)
 
+
 class OutputManager:
     """
     Class used to collect and store data (submissions and comments)
