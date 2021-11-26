@@ -1,5 +1,6 @@
 import praw
 import requests
+import logging
 
 
 def initialize_reddit():
@@ -41,11 +42,10 @@ class RedditAPI:
 
     def post_data(self, data):
         r = requests.post(self.api_url + "data", data=data)
-        print(data)
 
         # Exception handling
         try:
             r.raise_for_status()
-            print(r)
+            logging.info(f"{r}")
         except requests.exceptions.HTTPError as e:
-            print(e)
+            logging.error(e)

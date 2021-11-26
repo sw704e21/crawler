@@ -1,4 +1,5 @@
 import requests
+import logging
 
 
 class PostData:
@@ -19,14 +20,13 @@ class PostData:
 
     def post_data(self, data):
         r = requests.post(self.api_url + "data", data=data)
-        print(data)
 
         # Exception handling
         try:
             r.raise_for_status()
-            print(r)
+            logging.info(r)
         except requests.exceptions.HTTPError as e:
-            print(e)
+            logging.error(e)
 
 
 p = PostData()
