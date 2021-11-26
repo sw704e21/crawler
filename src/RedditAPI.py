@@ -1,7 +1,7 @@
 import praw
 import requests
 import logging
-
+logger = logging.getLogger("crawler")
 
 def initialize_reddit():
     reddit = praw.Reddit(client_id='y9aowlfsW7dLZyFuyrpH-w',
@@ -41,11 +41,12 @@ class RedditAPI:
             self.post_data(sub_dict)
 
     def post_data(self, data):
+        logger.info(f"Post sub {data['permalink']}")
         r = requests.post(self.api_url + "data", data=data)
 
         # Exception handling
         try:
             r.raise_for_status()
-            logging.info(f"{r}")
+            logger.info(r)
         except requests.exceptions.HTTPError as e:
-            logging.error(e)
+            logger.error(e)

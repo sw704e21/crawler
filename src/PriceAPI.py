@@ -2,6 +2,7 @@ import requests
 import schedule
 import time
 import logging
+logger = logging.getLogger("crawler")
 
 
 class PriceAPI:
@@ -13,7 +14,8 @@ class PriceAPI:
         self.get_identifiers()
 
     def run(self):
-        logging.info(self.tracking)
+        logger.info("Start price scheduler")
+        logger.info(self.tracking)
         schedule.every().hour.at(":00").do(self.price_hour)
         schedule.every().minute.do(self.price_minutes)
         while True:
@@ -27,17 +29,17 @@ class PriceAPI:
             self.tracking.append(t['identifier'])
 
     def price_minutes(self):
-        logging.info("patch")
+        logger.info("Patch prices")
         prices = self.get_prices()
         i = 0
         for p in prices.keys():
             res = requests.patch(self.cryptoAPI + "/price/" + p + "/" + str(prices[p]))
             if res.status_code == 200:
                 i += 1
-        logging.info(f"{i}/{len(prices)} success")
+        logger.info(f"{i}/{len(prices)} success")
 
     def price_hour(self):
-        logging.info("Posting")
+        logger.info("Post prices")
         self.get_identifiers()
         prices = self.get_prices()
         i = 0
@@ -46,9 +48,10 @@ class PriceAPI:
             res = requests.post(self.cryptoAPI + '/price', json=body)
             if res.status_code == 200:
                 i += 1
-        logging.info(f"{i}/{len(prices)} success")
+        logger.info(f"{i}/{len(prices)} success")
 
     def get_prices(self):
+        logger.info("Get prices")
         headers = {'content-type': 'application/json', 'x-api-key': self.apikey}
         body = {"currency": 'USD', "sort": 'rank', "order": 'ascending', "offset": 0, "limit": 200, "meta": False}
         price_list = requests.post(self.priceAPI + "/coins/list", headers=headers, json=body).json()

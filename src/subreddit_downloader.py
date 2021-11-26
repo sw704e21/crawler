@@ -15,7 +15,19 @@ from pushshift_py import PushshiftAPI
 from prawcore.exceptions import NotFound
 
 from update_posts import UpdatePosts
+import logging
+import datetime
+import os
+flogger = logging.getLogger("downloader")
+flogger.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(name)s:%(levelname)s - %(asctime)s %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
 
+now = datetime.datetime.now()
+
+handler = logging.FileHandler(f"{os.getcwd()}/logs/{now.day}-{now.month}-{now.year}.log", "a")
+handler.setLevel(logging.DEBUG)
+handler.setFormatter(formatter)
+flogger.addHandler(handler)
 
 class OutputManager:
     """
@@ -220,6 +232,7 @@ def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
         logger.debug(f"New lap start: {lap}")
         lap_message = f"Lap {lap}/{laps} completed in ""{minutes:.1f}m | " \
                       f"[new/tot]: {len(out_manager.comments_list)}/{out_manager.total_comments_counter}"
+        flogger.debug(f"Lap {lap}/{laps}")
 
         with Timer(text=lap_message, logger=logger.info):
             # Reset the data already stored

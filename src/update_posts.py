@@ -5,6 +5,7 @@ import schedule
 import os
 import time
 import logging
+logger = logging.getLogger("downloader")
 
 
 # Calculation of x amount of previous days, returned as unix timestamp.
@@ -49,6 +50,7 @@ class UpdatePosts:
         return data
 
     def scheduler(self):
+        logger.info("Start update scheduler")
         # self.test_schedule()
         self.daily_schedule()
         self.weekly_schedule()
@@ -62,7 +64,7 @@ class UpdatePosts:
 
     def daily_schedule(self):
         coins_list = self.get_tracked_subreddits()
-        schedule.every().hour.do(self.update_posts_daily, list=coins_list)
+        schedule.every().hour.at(":30").do(self.update_posts_daily, list=coins_list)
 
     def weekly_schedule(self):
         coins_list = self.get_tracked_subreddits()
@@ -75,12 +77,14 @@ class UpdatePosts:
 
     # downloading and patching submissions from the past 24 hours.
     def update_posts_daily(self, list):
+        logger.info("Patching interactions hourly")
         timecode = past_24h_unix()
         for j in list:
             self.download_data(j, timecode, 512, 3)
 
     # downloading and patching submissions from the past 7 days.
     def update_posts_weekly(self, list):
+        logger.info("Pathcing interactions daily")
         timecode = past_days_unix(7)
         for j in list:
             self.download_data(j, timecode, 512, 12)
@@ -88,10 +92,13 @@ class UpdatePosts:
     # Using the subreddit_downloader script
     def download_data(self, subreddit, timecode, batch_size, laps):
         # Specifying the amount of laps so that when fetching the data, the correct amount of files will be read.
-
-        os.system(f"python3 crawler/src/subreddit_downloader.py {subreddit} --batch-size {batch_size} --laps {laps} "
+        logger.info("Starting download")
+        try:
+            os.system(f"python3 src/subreddit_downloader.py {subreddit} --batch-size {batch_size} --laps {laps} "
                   f"--reddit-id y9aowlfsW7dLZyFuyrpH-w --reddit-secret 3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ "
                   f"--reddit-username Huften --utc-after {timecode}")
+        except Exception as e:
+            logger.error(e)
 
     # Looping through the downloaded submission data and updating num_comments and score for all the submissions.
     def update_data(self, data):
@@ -106,9 +113,10 @@ class UpdatePosts:
     # Creating a patch request that updates the interactions for coins in the database.
     def patch_data(self, url: str, interactions: int):
         payload = {'url': url, 'interactions': interactions}
+        logger.info(f"Patching {payload}")
         r = requests.patch(self.api_url + "/", params=payload)
         try:
             r.raise_for_status()
-            logging.info(r)
+            logger.info(r.status_code)
         except requests.exceptions.HTTPError as e:
-            logging.error(e)
+            logger.error(e)

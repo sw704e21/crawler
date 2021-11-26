@@ -1,7 +1,10 @@
 praw~=7.5.0
 requests~=2.26.0
+typer~=0.4.0
+loguru~=0.5.3
 prawcore~=2.3.0
 tweepy~=4.1.0
 pushshift.py~=0.1.2
 schedule~=1.1.0
+codetiming~=1.3.0
 

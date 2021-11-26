@@ -59,6 +59,7 @@ class TwitterAPI(tweepy.Stream):
         # Exception handling
         try:
             r.raise_for_status()
+            logging.info(r)
         except requests.exceptions.HTTPError as e:
             logging.error(e)
 

@@ -9,6 +9,7 @@ import requests
 import signal
 import TwitterAPI
 import logging
+logger = logging.getLogger("crawler")
 
 
 def start_crawler(reddit_name):
@@ -40,13 +41,13 @@ class MultiProcessScraper:
 
     def start_scrapers(self):
         for reddit in self.reddits_to_scrape:
-            logging.info('Started thread')
+            logger.info('Started thread')
             p = Process(target=start_crawler, args=([reddit]))
             p.start()
             self.processes.append(p)
             self.process_dict[reddit] = p.pid
 
-        logging.info("Started thread")
+        logger.info("Started thread")
         # Creates a Process
         # self.twitter_process = Process(target=start_twitter_tag, args=(self.tags_to_scrape, ['en']))
         # self.twitter_process.start()
@@ -80,8 +81,9 @@ class MultiProcessScraper:
                 else:
                     # sleep for sometime to indicate a gap
                     time.sleep(0.1)
-            except socket.error:
+            except socket.error as e:
                 # Catch non-blocking socket exception as part of timeout functionality
+                logger.error(e)
                 pass
 
         # join all parts to make final bytestring
@@ -89,23 +91,23 @@ class MultiProcessScraper:
 
     def run(self):
         self.start_scrapers()
-        logging.info(self.reddits_to_scrape)
-        logging.debug(f'Now listening on {self.host}:{self.port}')
+        logger.info(self.reddits_to_scrape)
+        logger.debug(f'Now listening on {self.host}:{self.port}')
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((self.host, self.port))
             while True:
                 s.listen()
                 conn, addr = s.accept()
                 with conn:
-                    logging.debug('Connected by', addr)
+                    logger.debug('Connected by', addr)
                     data = self._recv_timeout(conn)
                     if not data:
                         conn.sendall(pickle.dumps('Error receiving data'))
-                        logging.error("Error receiving data")
+                        logger.error("Error receiving data")
                         break
                     if pickle.loads(bytes(data)) == 'terminate':
                         conn.sendall(pickle.dumps('Terminating server'))
-                        logging.debug("Terminating")
+                        logger.debug("Terminating")
                         for p in self.processes:
                             p.kill()
                         sys.exit()
@@ -119,7 +121,7 @@ class MultiProcessScraper:
                             conn.sendall(pickle.dumps(data[1] + ' is not being tracked'))
                     if source == 'reddit':
                         new_reddit = data[1]
-                        logging.info(new_reddit)
+                        logger.info(new_reddit)
                         p = Process(target=start_crawler, args=([new_reddit]))
                         p.start()
                         self.processes.append(p)

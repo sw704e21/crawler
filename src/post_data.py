@@ -1,5 +1,6 @@
 import requests
 import logging
+logger = logging.getLogger("crawler")
 
 
 class PostData:
@@ -19,14 +20,15 @@ class PostData:
                 self.post_data(sub_dict)
 
     def post_data(self, data):
+        logger.info(f"Posting sub {data['permalink']}")
         r = requests.post(self.api_url + "data", data=data)
 
         # Exception handling
         try:
             r.raise_for_status()
-            logging.info(r)
+            logger.info(r)
         except requests.exceptions.HTTPError as e:
-            logging.error(e)
+            logger.error(e)
 
 
 p = PostData()

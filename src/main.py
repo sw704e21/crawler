@@ -5,12 +5,24 @@ from PriceAPI import PriceAPI
 import logging
 import datetime
 import os
+logger = logging.getLogger("crawler")
+downloader_logger = logging.getLogger("downloader")
+logger.setLevel(logging.DEBUG)
+downloader_logger.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('%(name)s:%(levelname)s - %(asctime)s %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
+
+now = datetime.datetime.now()
+
+handler = logging.FileHandler(f"{os.getcwd()}/logs/{now.day}-{now.month}-{now.year}.log", "a")
+handler.setLevel(logging.DEBUG)
+handler.setFormatter(formatter)
+
+logger.addHandler(handler)
+downloader_logger.addHandler(handler)
 
 if __name__ == '__main__':
-    now = datetime.datetime.now()
-    logging.basicConfig(filename=f"{os.getcwd()}/logs/{now.day}-{now.month}-{now.year}.log", filemode="a",
-                        level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
-    logging.info("Starting crawler")
+    logger.info("Starting crawler")
     manager = MultiProcessScraper()
     updating = UpdatePosts()
     price = PriceAPI()
