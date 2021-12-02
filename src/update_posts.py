@@ -5,6 +5,7 @@ import schedule
 import os
 import time
 import logging
+from post_data import PostData
 
 logger = logging.getLogger("downloader")
 
@@ -61,7 +62,7 @@ class UpdatePosts:
 
     def test_schedule(self):
         coins_list = self.get_tracked_subreddits()
-        schedule.every(10).seconds.do(self.update_posts_test, list=coins_list)
+        schedule.every(5).seconds.do(self.update_posts_test, list=coins_list)
 
     def daily_schedule(self):
         coins_list = self.get_tracked_subreddits()
@@ -81,14 +82,14 @@ class UpdatePosts:
         logger.info("Patching interactions hourly")
         timecode = past_24h_unix()
         for j in list:
-            self.download_data(j, timecode, 512, 3)
+            self.download_data(j, timecode, 512, 4)
 
     # downloading and patching submissions from the past 7 days.
     def update_posts_weekly(self, list):
-        logger.info("Pathcing interactions daily")
+        logger.info("Patching interactions daily")
         timecode = past_days_unix(7)
         for j in list:
-            self.download_data(j, timecode, 512, 12)
+            self.download_data(j, timecode, 512, 21)
 
     # Using the subreddit_downloader script
     def download_data(self, subreddit, timecode, batch_size, laps):
@@ -103,16 +104,19 @@ class UpdatePosts:
 
     # Looping through the downloaded submission data and updating num_comments and score for all the submissions.
     def update_data(self, data):
-        for submission in data:
-            url = submission['full_link']
-            update_submissions = initialize_reddit().submission(url=url)
-            num_comments = update_submissions.num_comments
-            score = update_submissions.score
-            interactions = int(num_comments) + int(score)
-            self.patch_data(url, interactions)
+        if data:
+            for submission in data:
+                submission['permalink'] = submission['full_link']
+                url = submission['permalink']
+                update_submissions = initialize_reddit().submission(url=url)
+                num_comments = update_submissions.num_comments
+                score = update_submissions.score
+                interactions = int(num_comments) + int(score)
+                self.patch_data(url, interactions, submission)
+
 
     # Creating a patch request that updates the interactions for coins in the database.
-    def patch_data(self, url: str, interactions: int):
+    def patch_data(self, url: str, interactions: int, data):
         payload = {'url': url, 'interactions': interactions}
         logger.info(f"Patching {payload}")
         r = requests.patch(self.api_url + "/", params=payload)
@@ -121,3 +125,7 @@ class UpdatePosts:
             logger.info(r.status_code)
         except requests.exceptions.HTTPError as e:
             logger.error(e)
+            if r.status_code == 404:
+                post = PostData()
+                post.post_data(data)
+

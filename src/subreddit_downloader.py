@@ -222,6 +222,7 @@ def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
                                          run_args=locals())
     pushshift_api, reddit_api = init_clients(reddit_id, reddit_secret, reddit_username)
     logger.info(f"Start download: "
+                f"Subreddit: {subreddit}, "
                 f"UTC range: [{utc_lower_bound}, {utc_upper_bound}], "
                 f"direction: `{direction}`, "
                 f"batch size: {batch_size}, "
@@ -240,6 +241,7 @@ def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
             out_manager.reset_lists()
 
             # Fetch data in the `direction` way
+
             submissions_generator = pushshift_api.search_submissions(subreddit=subreddit,
                                                                      limit=batch_size,
                                                                      sort='desc' if direction == "before" else 'asc',
@@ -248,8 +250,10 @@ def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
                                                                      direction == "after" else None,
                                                                      before=utc_lower_bound if
                                                                      direction == "before" else None,
+                                                                     filter=["title", "full_link",
+                                                                             "score", "created_utc", "selftext",
+                                                                             "num_comments", "id"]
                                                                      )
-
             for sub in submissions_generator:
                 logger.debug(f"New submission `{sub.full_link}` - created_utc: {sub.created_utc}")
 
@@ -267,6 +271,7 @@ def downloader(subreddit: str = Argument(..., help=HelpMessages.subreddit),
             up.update_data(out_manager.store())
 
             # Check the bounds
+            # if utc_upper_bound is not None and utc_lower_bound is not None:
             assert utc_lower_bound < utc_upper_bound, f"utc_lower_bound '{utc_lower_bound}' should be " \
                                                       f"less than utc_upper_bound '{utc_upper_bound}'"
         logger.debug(f"utc_upper_bound: {utc_upper_bound} , utc_lower_bound: {utc_lower_bound}")
