@@ -114,7 +114,6 @@ class UpdatePosts:
                 interactions = int(num_comments) + int(score)
                 self.patch_data(url, interactions, submission)
 
-
     # Creating a patch request that updates the interactions for coins in the database.
     def patch_data(self, url: str, interactions: int, data):
         payload = {'url': url, 'interactions': interactions}
@@ -128,4 +127,3 @@ class UpdatePosts:
             if r.status_code == 404:
                 post = PostData()
                 post.post_data(data)
-
