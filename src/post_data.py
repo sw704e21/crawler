@@ -29,7 +29,3 @@ class PostData:
             logger.info(r)
         except requests.exceptions.HTTPError as e:
             logger.error(e)
-
-
-p = PostData()
-p.submission_handler(filepath='...')
