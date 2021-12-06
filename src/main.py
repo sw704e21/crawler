@@ -30,5 +30,5 @@ if __name__ == '__main__':
     scheduler_process = Process(target=updating.scheduler)
     price_process = Process(target=price.run)
     manager_process.start()
-    scheduler_process.start()
-    price_process.start()
+    #scheduler_process.start()
+    #price_process.start()
