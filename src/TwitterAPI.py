@@ -18,17 +18,15 @@ class TwitterAPI(tweepy.Stream):
 
     def on_status(self, status):
         aDict = status._json
-        print(aDict)
 
         # Creating the dictionary to pass to the sentiment analyzer
         sub_dict = {}
 
         # Creating the dict to pass onto the sentiment analyzer
         user = aDict['user']
-
         # Inserting/extracting values
         sub_dict['title'] = ""
-        sub_dict['permalink'] = user['url']
+        sub_dict['permalink'] = "https://twitter.com/i/web/status/" + aDict['id_str']
         sub_dict['selftext'] = aDict['text']
         sub_dict['score'] = user['followers_count'] + aDict['favorite_count']
         sub_dict['created_utc'] = aDict['created_at']
@@ -58,7 +56,7 @@ class TwitterAPI(tweepy.Stream):
 
     def post_data(self, data):
         r = requests.post(self.api_url + "data", data=data)
-        logger.info(f"Post {data}")
+        logger.info(f"Post {data['permalink']}")
         # Exception handling
         try:
             r.raise_for_status()

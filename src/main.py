@@ -5,8 +5,8 @@ from PriceAPI import PriceAPI
 import logging
 import datetime
 import os
-LEVEL = 'PRODUCTION'
-# LEVEL = 'DEVELOPMENT'
+# LEVEL = 'PRODUCTION'
+LEVEL = 'DEVELOPMENT'
 
 logger = logging.getLogger("crawler")
 downloader_logger = logging.getLogger("downloader")
@@ -38,5 +38,5 @@ if __name__ == '__main__':
     scheduler_process = Process(target=updating.scheduler)
     price_process = Process(target=price.run)
     manager_process.start()
-    #scheduler_process.start()
-    #price_process.start()
+    scheduler_process.start()
+    price_process.start()
