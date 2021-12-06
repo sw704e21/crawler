@@ -5,6 +5,9 @@ from PriceAPI import PriceAPI
 import logging
 import datetime
 import os
+LEVEL = 'PRODUCTION'
+# LEVEL = 'DEVELOPMENT'
+
 logger = logging.getLogger("crawler")
 downloader_logger = logging.getLogger("downloader")
 logger.setLevel(logging.DEBUG)
@@ -14,10 +17,15 @@ formatter = logging.Formatter('%(name)s:%(levelname)s - %(asctime)s %(message)s'
 
 now = datetime.datetime.now()
 
-handler = logging.FileHandler(f"{os.getcwd()}/logs/{now.day}-{now.month}-{now.year}.log", "a")
+if LEVEL == 'PRODUCTION':
+    handler = logging.FileHandler(f"{os.getcwd()}/logs/{now.day}-{now.month}-{now.year}.log", "a")
+elif LEVEL == 'DEVELOPMENT':
+    handler = logging.StreamHandler()
+else:
+    handler = None
+
 handler.setLevel(logging.DEBUG)
 handler.setFormatter(formatter)
-
 logger.addHandler(handler)
 downloader_logger.addHandler(handler)
 
