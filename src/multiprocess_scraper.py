@@ -9,12 +9,14 @@ logger = logging.getLogger("crawler")
 class MultiProcessScraper:
 
     def __init__(self):
+        # Kafka server config
         self.host = "104.41.213.247"
         self.port = "9092"
         self.server = self.host + ":" + self.port
-        self.tags = ["bitcoin"]
         self.topic = "CoinsToTrack"
         self.api_version = (2, 4, 0)
+
+        self.tags = []
         self.reddit = None
         self.twitter = None
 
