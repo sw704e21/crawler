@@ -28,7 +28,7 @@ class TwitterAPI(tweepy.Stream):
         sub_dict['title'] = ""
         sub_dict['permalink'] = "https://twitter.com/i/web/status/" + aDict['id_str']
         sub_dict['selftext'] = aDict['text']
-        sub_dict['score'] = user['followers_count'] + aDict['favorite_count']
+        sub_dict['score'] = aDict['reply_count'] + aDict['favorite_count']
         sub_dict['created_utc'] = aDict['created_at']
         sub_dict['num_comments'] = aDict['retweet_count']
         sub_dict['karma'] = user['followers_count']

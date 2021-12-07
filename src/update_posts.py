@@ -2,10 +2,16 @@ import praw
 import requests
 from datetime import datetime
 import schedule
-import os
 import time
 import logging
-from post_data import PostData
+from tweepy import Client, OAuthHandler
+from pushshift_py import PushshiftAPI
+
+TWITTER_APP_KEY = "VVHRzSdTp6T35a04AJuqlr3SR"
+TWITTER_APP_SECRET = "83MFy2JuE3sbyLhqWtpKV7KoBLQ7EDQgFCWEXVQgNqf44cJaxD"
+TWITTER_KEY = "611585498-MgduwddC5tSVylz6CzUTMJKULy8qM6PJsdASvTtX"
+TWITTER_SECRET = "S7gX7cTaqfnfkenpG0C3PD0Fu0YGAMKEijgGsWmsE1OZV"
+TWITTER_BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAALHPVAEAAAAAfHjUBIowk4cFZCHjN42zfoYoxKo%3D3gqjnwkNbYKL9ek5NsvoMAVu6aClSjyxl6PxWFVXOgkLBnM9xN"
 
 logger = logging.getLogger("downloader")
 
@@ -44,7 +50,7 @@ def initialize_reddit():
 class UpdatePosts:
 
     def __init__(self):
-        self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/coins"
+        self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com"
 
     def get_tracked_subreddits(self):
         r = requests.get(self.api_url + "/all/names")
@@ -61,69 +67,76 @@ class UpdatePosts:
             time.sleep(1)
 
     def test_schedule(self):
-        coins_list = self.get_tracked_subreddits()
-        schedule.every(5).seconds.do(self.update_posts_test, list=coins_list)
+        schedule.every(5).seconds.do(self.update_posts_test)
 
     def daily_schedule(self):
-        coins_list = self.get_tracked_subreddits()
-        schedule.every().hour.at(":30").do(self.update_posts_daily, list=coins_list)
+        schedule.every().hour.at(":30").do(self.update_posts_daily)
 
     def weekly_schedule(self):
-        coins_list = self.get_tracked_subreddits()
-        schedule.every().day.at("12:00").do(self.update_posts_weekly, list=coins_list)
+        schedule.every().day.at("12:00").do(self.update_posts_weekly)
 
-    def update_posts_test(self, list):
-        timecode = past_24h_unix()
-        for j in list:
-            self.download_data(j, timecode, 3, 3)
+    def update_posts_test(self):
+        self.download_data(0.5)
 
     # downloading and patching submissions from the past 24 hours.
-    def update_posts_daily(self, list):
+    def update_posts_daily(self):
         logger.info("Patching interactions hourly")
-        timecode = past_24h_unix()
-        for j in list:
-            self.download_data(j, timecode, 512, 4)
+        self.download_data(1)
 
     # downloading and patching submissions from the past 7 days.
-    def update_posts_weekly(self, list):
+    def update_posts_weekly(self):
         logger.info("Patching interactions daily")
-        timecode = past_days_unix(7)
-        for j in list:
-            self.download_data(j, timecode, 512, 21)
+        self.download_data(7)
+
+    def download_data(self, timecode):
+        param = {'age': timecode}
+        r = requests.get(self.api_url + '/sentiment/ids/reddit', params=param)
+        lst = r.json()
+        i = 100
+        j = 0
+        a = PushshiftAPI()
+        while j * i < len(lst):
+            slice = lst[i * j: i * j + 1]
+            self.update_data(a.search_submissions(ids=slice, limit=i))
+        r = requests.get(self.api_url + '/sentiment/ids/twitter', params=param)
+        lst = r.json()
+        i = 100
+        j = 0
+        a = Client(TWITTER_BEARER_TOKEN, TWITTER_APP_KEY, TWITTER_APP_SECRET, TWITTER_KEY, TWITTER_SECRET)
+        while j * i < len(lst):
+            slice = lst[i * j: i * j + 1]
+            lst = a.get_tweets(ids=slice, tweet_fields='public_metrics').data
+            for tweet in lst:
+                self.patch_data(str(tweet.id), tweet.public_metrics['reply_count'] + tweet.public_metrics['like_count'])
 
     # Using the subreddit_downloader script
-    def download_data(self, subreddit, timecode, batch_size, laps):
-        # Specifying the amount of laps so that when fetching the data, the correct amount of files will be read.
-        logger.info("Starting download")
-        try:
-            os.system(f"python3 src/subreddit_downloader.py {subreddit} --batch-size {batch_size} --laps {laps} "
-                      f"--reddit-id y9aowlfsW7dLZyFuyrpH-w --reddit-secret 3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ "
-                      f"--reddit-username Huften --utc-after {timecode}")
-        except Exception as e:
-            logger.error(e)
+    # def download_data(self, subreddit, timecode, batch_size, laps):
+    #    # Specifying the amount of laps so that when fetching the data, the correct amount of files will be read.
+    #    logger.info("Starting download")
+    #    try:
+    #        os.system(f"python3 src/subreddit_downloader.py {subreddit} --batch-size {batch_size} --laps {laps} "
+    #                  f"--reddit-id y9aowlfsW7dLZyFuyrpH-w --reddit-secret 3PSSrFjw7RX-nG6xfyFx_IFd74PHbQ "
+    #                  f"--reddit-username Huften --utc-after {timecode}")
+    #    except Exception as e:
+    #        logger.error(e)
 
     # Looping through the downloaded submission data and updating num_comments and score for all the submissions.
     def update_data(self, data):
         if data:
             for submission in data:
-                submission['permalink'] = submission['full_link']
-                url = submission['permalink']
-                update_submissions = initialize_reddit().submission(url=url)
-                num_comments = update_submissions.num_comments
-                score = update_submissions.score
+                uuid = submission['id']
+                num_comments = submission.num_comments
+                score = submission.score
                 interactions = int(num_comments) + int(score)
-                self.patch_data(url, interactions, submission)
+                self.patch_data(uuid, interactions)
 
     # Creating a patch request that updates the interactions for coins in the database.
-    def patch_data(self, url: str, interactions: int, data):
-        payload = {'url': url, 'interactions': interactions}
+    def patch_data(self, uuid: str, interactions: int):
+        payload = {'uuid': uuid, 'interactions': interactions}
         logger.info(f"Patching {payload}")
-        r = requests.patch(self.api_url + "/", params=payload)
+        r = requests.patch(self.api_url + "/coins", params=payload)
         try:
             r.raise_for_status()
             logger.info(r.status_code)
         except requests.exceptions.HTTPError as e:
             logger.error(e)
-            if r.status_code == 404:
-                post = PostData()
-                post.post_data(data)
