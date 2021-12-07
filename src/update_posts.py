@@ -4,7 +4,7 @@ from datetime import datetime
 import schedule
 import time
 import logging
-from tweepy import Client, OAuthHandler
+from tweepy import Client
 from pushshift_py import PushshiftAPI
 
 TWITTER_APP_KEY = "VVHRzSdTp6T35a04AJuqlr3SR"
