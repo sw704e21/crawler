@@ -41,11 +41,13 @@ class RedditAPI:
                     sub_dict['created_utc'] *= 1000
                     # sub_dict['source'] = subreddit.display_name
                     sub_dict['permalink'] = reddit_url + sub_dict['permalink']
+                    sub_dict['uuid'] = sub_dict['id']
+                    sub_dict['source'] = 'reddit'
                     # posting submission data through the API
                     s = self.post_data(sub_dict)
                     if s == 403:
                         break
-                time.sleep(1)
+                time.sleep(10)
             except Exception as e:
                 logger.error(e)
 
