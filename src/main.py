@@ -5,8 +5,8 @@ from PriceAPI import PriceAPI
 import logging
 import datetime
 import os
-# LEVEL = 'PRODUCTION'
-LEVEL = 'DEVELOPMENT'
+LEVEL = 'PRODUCTION'
+# LEVEL = 'DEVELOPMENT'
 
 logger = logging.getLogger("crawler")
 downloader_logger = logging.getLogger("downloader")
