@@ -45,7 +45,7 @@ class RedditAPI:
                     s = self.post_data(sub_dict)
                     if s == 403:
                         break
-                    time.sleep(1)
+                time.sleep(1)
             except Exception as e:
                 logger.error(e)
 
