@@ -2,6 +2,7 @@ import json
 import tweepy
 import requests
 import logging
+logger = logging.getLogger("crawler")
 
 TWITTER_APP_KEY = "VVHRzSdTp6T35a04AJuqlr3SR"
 TWITTER_APP_SECRET = "83MFy2JuE3sbyLhqWtpKV7KoBLQ7EDQgFCWEXVQgNqf44cJaxD"
@@ -11,7 +12,7 @@ TWITTER_SECRET = "S7gX7cTaqfnfkenpG0C3PD0Fu0YGAMKEijgGsWmsE1OZV"
 
 class TwitterAPI(tweepy.Stream):
 
-    def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret, api_url=""):
+    def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret):
         super().__init__(consumer_key, consumer_secret, access_token, access_token_secret)
         self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
 
@@ -23,10 +24,9 @@ class TwitterAPI(tweepy.Stream):
 
         # Creating the dict to pass onto the sentiment analyzer
         user = aDict['user']
-
         # Inserting/extracting values
         sub_dict['title'] = ""
-        sub_dict['permalink'] = user['url']
+        sub_dict['permalink'] = "https://twitter.com/i/web/status/" + aDict['id_str']
         sub_dict['selftext'] = aDict['text']
         sub_dict['score'] = user['followers_count'] + aDict['favorite_count']
         sub_dict['created_utc'] = aDict['created_at']
@@ -40,10 +40,10 @@ class TwitterAPI(tweepy.Stream):
         self.post_data(submission_data)
 
     def on_error(self, status):
-        logging.error(status)
+        logger.error(status)
 
     def twitter_stream(self, keywords, languages):
-
+        logger.debug("Starting twitter stream")
         # Starting the actual stream
         self.filter(track=keywords)
         self.filter(languages=languages)
@@ -56,12 +56,13 @@ class TwitterAPI(tweepy.Stream):
 
     def post_data(self, data):
         r = requests.post(self.api_url + "data", data=data)
+        logger.info(f"Post {data['permalink']}")
         # Exception handling
         try:
             r.raise_for_status()
-            logging.info(r)
+            logger.info(r)
         except requests.exceptions.HTTPError as e:
-            logging.error(e)
+            logger.error(e)
 
 
 def initialize_twitter():
