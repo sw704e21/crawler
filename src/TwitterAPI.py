@@ -1,4 +1,3 @@
-import json
 import tweepy
 import requests
 import logging
