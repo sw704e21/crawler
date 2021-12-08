@@ -35,11 +35,8 @@ class TwitterAPI(tweepy.Stream):
         sub_dict['uuid'] = aDict['id_str']
         sub_dict['source'] = 'twitter'
 
-        # Converting into a json object
-        submission_data = json.dumps(sub_dict)
-
         # Sending the json object
-        self.post_data(submission_data)
+        self.post_data(sub_dict)
 
     def on_error(self, status):
         logger.error(status)
@@ -57,7 +54,7 @@ class TwitterAPI(tweepy.Stream):
             logging.error(e)
 
     def post_data(self, data):
-        r = requests.post(self.api_url + "data", data=data)
+        r = requests.post(self.api_url + "data", json=data)
         logger.info(f"Post {data['permalink']}")
         # Exception handling
         try:
