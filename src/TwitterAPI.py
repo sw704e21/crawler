@@ -25,7 +25,7 @@ class TwitterAPI(tweepy.Stream):
         user = aDict['user']
         # Inserting/extracting values
         sub_dict['title'] = ""
-        sub_dict['permalink'] = "https://twitter.com/i/web/status/" + aDict['id_str']
+        sub_dict['permalink'] = "https://twitter.com/" + user['screen_name'] + "/status/" + aDict['id_str']
         sub_dict['selftext'] = aDict['text']
         sub_dict['score'] = aDict['reply_count'] + aDict['favorite_count']
         sub_dict['created_utc'] = aDict['created_at']
