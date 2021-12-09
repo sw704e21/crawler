@@ -43,10 +43,9 @@ class TwitterAPI(tweepy.Stream):
     def twitter_stream(self, keywords, languages):
         logger.debug("Starting twitter stream")
         # Starting the actual stream
-        self.filter(track=keywords)
-        self.filter(languages=languages)
+        self.filter(track=keywords, languages=['en'])
         try:
-            self.sample()
+            self.sample(languages=languages)
         except self.on_request_error as e:
             logging.error(e)
         except self.on_disconnect as e:

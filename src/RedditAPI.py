@@ -14,7 +14,7 @@ def initialize_reddit():
 
 class RedditAPI:
     # Specify the wanted fields from praw.submissions to be send through the API
-    fields = ('title', 'permalink', 'selftext', 'score', 'created_utc', 'num_comments')
+    fields = ('title', 'permalink', 'selftext', 'score', 'created_utc', 'num_comments', 'id')
 
     def __init__(self):
         self.headline = set()
@@ -32,6 +32,7 @@ class RedditAPI:
             query += " OR " + t
         while True:
             try:
+                i = 0
                 for submission in reddit.subreddit('all').search(query, sort='new', limit=100):
                     # Adding the specified submission fields to the json object
                     to_dict = vars(submission)
@@ -47,6 +48,8 @@ class RedditAPI:
                     s = self.post_data(sub_dict)
                     if s == 403:
                         break
+                    i += 1
+                logger.info(f"Sent {i} new posts")
                 time.sleep(10)
             except Exception as e:
                 logger.error(e)
