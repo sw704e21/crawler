@@ -97,18 +97,20 @@ class UpdatePosts:
         j = 0
         a = PushshiftAPI()
         while j * i < len(lst):
-            slice = lst[i * j: i * j + 1]
+            slice = lst[i * j: i * (j + 1)]
             self.update_data(a.search_submissions(ids=slice, limit=i))
+            j += 1
         r = requests.get(self.api_url + '/sentiment/ids/twitter', params=param)
         lst = r.json()
         i = 100
         j = 0
         a = Client(TWITTER_BEARER_TOKEN, TWITTER_APP_KEY, TWITTER_APP_SECRET, TWITTER_KEY, TWITTER_SECRET)
         while j * i < len(lst):
-            slice = lst[i * j: i * j + 1]
+            slice = lst[i * j: i * (j + 1)]
             lst = a.get_tweets(ids=slice, tweet_fields='public_metrics').data
             for tweet in lst:
                 self.patch_data(str(tweet.id), tweet.public_metrics['reply_count'] + tweet.public_metrics['like_count'])
+            j += 1
 
     # Using the subreddit_downloader script
     # def download_data(self, subreddit, timecode, batch_size, laps):
@@ -125,7 +127,7 @@ class UpdatePosts:
     def update_data(self, data):
         if data:
             for submission in data:
-                uuid = submission['id']
+                uuid = submission.id
                 num_comments = submission.num_comments
                 score = submission.score
                 interactions = int(num_comments) + int(score)
