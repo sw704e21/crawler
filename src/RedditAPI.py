@@ -31,8 +31,9 @@ class RedditAPI:
         for t in tags[1:]:
             query += " OR " + t
         while True:
+            i = 0
             try:
-                i = 0
+
                 for submission in reddit.subreddit('all').search(query, sort='new', limit=100):
                     # Adding the specified submission fields to the json object
                     to_dict = vars(submission)
@@ -49,10 +50,11 @@ class RedditAPI:
                     if s == 403:
                         break
                     i += 1
-                logger.info(f"Sent {i} new posts")
                 time.sleep(10)
             except Exception as e:
                 logger.error(e)
+            finally:
+                logger.info(f"Sent {i} new posts")
 
     def post_data(self, data):
         logger.info(f"Post sub {data['permalink']}")

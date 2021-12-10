@@ -17,7 +17,7 @@ class TwitterAPI(tweepy.Stream):
         self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
 
     def on_status(self, status: Tweet):
-        if not status.retweeted and not status.in_reply_to_user_id:
+        if not status.retweeted and not status.in_reply_to_user_id and not status.text.startswith("RT "):
             # Creating the dictionary to pass to the sentiment analyzer
             sub_dict = {}
 
