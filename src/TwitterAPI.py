@@ -1,6 +1,7 @@
 import tweepy
 import requests
 import logging
+from tweepy import Tweet
 logger = logging.getLogger("crawler")
 
 TWITTER_APP_KEY = "VVHRzSdTp6T35a04AJuqlr3SR"
@@ -15,27 +16,25 @@ class TwitterAPI(tweepy.Stream):
         super().__init__(consumer_key, consumer_secret, access_token, access_token_secret)
         self.api_url = "http://cryptoserver.northeurope.cloudapp.azure.com/"
 
-    def on_status(self, status):
-        aDict = status._json
+    def on_status(self, status: Tweet):
+        if not status.retweeted and not status.in_reply_to_user_id:
+            # Creating the dictionary to pass to the sentiment analyzer
+            sub_dict = {}
 
-        # Creating the dictionary to pass to the sentiment analyzer
-        sub_dict = {}
+            # Creating the dict to pass onto the sentiment analyzer
+            # Inserting/extracting values
+            sub_dict['title'] = ""
+            sub_dict['permalink'] = "https://twitter.com/" + status.user.screen_name + "/status/" + status.id_str
+            sub_dict['selftext'] = status.text
+            sub_dict['score'] = status.reply_count + status.favorite_count
+            sub_dict['created_utc'] = str(status.created_at)
+            sub_dict['num_comments'] = status.retweet_count
+            sub_dict['karma'] = status.user.followers_count
+            sub_dict['uuid'] = status.id_str
+            sub_dict['source'] = 'twitter'
 
-        # Creating the dict to pass onto the sentiment analyzer
-        user = aDict['user']
-        # Inserting/extracting values
-        sub_dict['title'] = ""
-        sub_dict['permalink'] = "https://twitter.com/" + user['screen_name'] + "/status/" + aDict['id_str']
-        sub_dict['selftext'] = aDict['text']
-        sub_dict['score'] = aDict['reply_count'] + aDict['favorite_count']
-        sub_dict['created_utc'] = aDict['created_at']
-        sub_dict['num_comments'] = aDict['retweet_count']
-        sub_dict['karma'] = user['followers_count']
-        sub_dict['uuid'] = aDict['id_str']
-        sub_dict['source'] = 'twitter'
-
-        # Sending the json object
-        self.post_data(sub_dict)
+            # Sending the json object
+            self.post_data(sub_dict)
 
     def on_error(self, status):
         logger.error(status)

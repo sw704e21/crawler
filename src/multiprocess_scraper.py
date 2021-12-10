@@ -3,6 +3,7 @@ from RedditAPI import RedditAPI
 import TwitterAPI
 import logging
 import kafka
+import psutil
 logger = logging.getLogger("crawler")
 
 
@@ -34,19 +35,25 @@ class MultiProcessScraper:
         reddit = Process(target=self.start_reddit)
         reddit.start()
         if self.reddit:
-            self.reddit.kill()
-        self.reddit = reddit
+            p = psutil.Process(self.reddit)
+            p.kill()
+        self.reddit = reddit.pid
         twitter = Process(target=self.start_twitter)
         twitter.start()
         if self.twitter:
-            self.twitter.kill()
-        self.twitter = twitter
+            p = psutil.Process(self.twitter)
+            p.kill()
+        self.twitter = twitter.pid
 
     def run(self):
         logger.info("Starting kafka consumer")
-        consumer = kafka.KafkaConsumer(self.topic, bootstrap_servers=self.server, api_version=self.api_version)
+        consumer = kafka.KafkaConsumer(self.topic, bootstrap_servers=self.server, api_version=self.api_version,
+                                       group_id="Crawler")
         for m in consumer:
-            tag = m.value.decode('utf-8')
-            logger.info(f"Received tag: {tag}")
-            self.tags.append(tag)
-            self.restart_process()
+            try:
+                tag = m.value.decode('utf-8')
+                logger.info(f"Received tag: {tag}")
+                self.tags.append(tag)
+                self.restart_process()
+            except Exception as e:
+                logger.error(e.args)
