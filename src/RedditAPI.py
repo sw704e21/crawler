@@ -41,8 +41,13 @@ class RedditAPI:
                         redditor = submission.author
                         sub_dict = {'karma': redditor.link_karma + redditor.comment_karma,
                                     'created_utc': submission.created_utc * 1000,
-                                    'permalink': reddit_url + submission.permalink, 'uuid': submission.id,
-                                    'source': 'reddit'}
+                                    'permalink': reddit_url + submission.permalink,
+                                    'uuid': submission.id,
+                                    'source': 'reddit',
+                                    'title': submission.title,
+                                    'selftext': submission.selftext,
+                                    'score': submission.score,
+                                    'num_comments': submission.num_comments}
                         # sub_dict['source'] = subreddit.display_name
                         # posting submission data through the API
                         self.post_data(sub_dict)
