@@ -1,6 +1,5 @@
 import praw
 import requests
-import time
 import logging
 logger = logging.getLogger("crawler")
 
