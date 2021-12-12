@@ -30,31 +30,28 @@ class RedditAPI:
         query = tags[0]
         for t in tags[1:]:
             query += " OR " + t
+        last = []
         while True:
             i = 0
-            try:
-
-                for submission in reddit.subreddit('all').search(query, sort='new', limit=100):
-                    # Adding the specified submission fields to the json object
-                    to_dict = vars(submission)
-                    redditor = to_dict['author']
-                    sub_dict = {field: to_dict[field] for field in self.fields}
-                    sub_dict['karma'] = redditor.link_karma + redditor.comment_karma
-                    sub_dict['created_utc'] *= 1000
-                    # sub_dict['source'] = subreddit.display_name
-                    sub_dict['permalink'] = reddit_url + sub_dict['permalink']
-                    sub_dict['uuid'] = sub_dict['id']
-                    sub_dict['source'] = 'reddit'
-                    # posting submission data through the API
-                    s = self.post_data(sub_dict)
-                    if s == 403:
-                        break
-                    i += 1
-                time.sleep(10)
-            except Exception as e:
-                logger.error(e)
-            finally:
-                logger.info(f"Sent {i} new posts")
+            new = []
+            for submission in reddit.subreddit('all').search(query, sort='new', limit=100):
+                try:
+                    if submission.id not in last:
+                        new.append(submission.id)
+                        # Adding the specified submission fields to the json object
+                        redditor = submission.author
+                        sub_dict = {'karma': redditor.link_karma + redditor.comment_karma,
+                                    'created_utc': submission.created_utc * 1000,
+                                    'permalink': reddit_url + submission.permalink, 'uuid': submission.id,
+                                    'source': 'reddit'}
+                        # sub_dict['source'] = subreddit.display_name
+                        # posting submission data through the API
+                        self.post_data(sub_dict)
+                        i += 1
+                except Exception as e:
+                    logger.error(e.args)
+            last = new
+            logger.info(f"Sent {i} new posts")
 
     def post_data(self, data):
         logger.info(f"Post sub {data['permalink']}")
@@ -65,6 +62,6 @@ class RedditAPI:
             r.raise_for_status()
             logger.info(r)
         except requests.exceptions.HTTPError as e:
-            logger.error(e)
+            logger.error(e.args)
         finally:
             return r.status_code
