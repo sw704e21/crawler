@@ -63,6 +63,7 @@ class UpdatePosts:
         # self.test_schedule()
         self.daily_schedule()
         self.weekly_schedule()
+        self.delete_schedule()
         while True:
             schedule.run_pending()
             time.sleep(1)
@@ -78,6 +79,18 @@ class UpdatePosts:
 
     def update_posts_test(self):
         self.download_data(0.5)
+
+    def delete_schedule(self):
+        schedule.every(30).minute.do(self.delete_old_posts)
+
+    def delete_old_posts(self):
+        logger.info("Deleting old words")
+        try:
+            r = requests.delete(self.api_url + '/data/tfdict')
+            r.raise_for_status()
+            logger.info(r.json())
+        except Exception as e:
+            logger.error(e)
 
     # downloading and patching submissions from the past 24 hours.
     def update_posts_daily(self):
