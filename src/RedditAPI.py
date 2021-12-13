@@ -35,8 +35,9 @@ class RedditAPI:
             new = []
             for submission in reddit.subreddit('all').search(query, sort='new', limit=100):
                 try:
+
                     if submission.id not in last:
-                        new.append(submission.id)
+
                         # Adding the specified submission fields to the json object
                         redditor = submission.author
                         sub_dict = {'karma': redditor.link_karma + redditor.comment_karma,
@@ -52,6 +53,7 @@ class RedditAPI:
                         # posting submission data through the API
                         self.post_data(sub_dict)
                         i += 1
+                    new.append(submission.id)
                 except Exception as e:
                     logger.error(e.args)
             last = new
