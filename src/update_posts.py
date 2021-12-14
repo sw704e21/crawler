@@ -81,7 +81,7 @@ class UpdatePosts:
         self.download_data(0.5)
 
     def delete_schedule(self):
-        schedule.every(30).minute.do(self.delete_old_posts)
+        schedule.every(30).minutes.do(self.delete_old_posts)
 
     def delete_old_posts(self):
         logger.info("Deleting old words")
@@ -106,13 +106,17 @@ class UpdatePosts:
         param = {'age': timecode}
         r = requests.get(self.api_url + '/sentiment/ids/reddit', params=param)
         lst = r.json()
+        logger.info(f'Updating {len(lst)} posts')
         i = 100
         j = 0
         a = PushshiftAPI()
         while j * i < len(lst):
-            slice = lst[i * j: i * (j + 1)]
-            self.update_data(a.search_submissions(ids=slice, limit=i))
-            j += 1
+            try:
+                slice = lst[i * j: i * (j + 1)]
+                self.update_data(a.search_submissions(ids=slice, limit=i))
+                j += 1
+            except Exception as e:
+                logger.error(e)
         r = requests.get(self.api_url + '/sentiment/ids/twitter', params=param)
         lst = r.json()
         i = 100
@@ -140,16 +144,18 @@ class UpdatePosts:
     def update_data(self, data):
         if data:
             for submission in data:
-                uuid = submission.id
-                num_comments = submission.num_comments
-                score = submission.score
-                interactions = int(num_comments) + int(score)
-                self.patch_data(uuid, interactions)
+                try:
+                    uuid = submission.id
+                    num_comments = submission.num_comments
+                    score = submission.score
+                    interactions = int(num_comments) + int(score)
+                    self.patch_data(uuid, interactions)
+                except Exception as e:
+                    logger.error(e)
 
     # Creating a patch request that updates the interactions for coins in the database.
     def patch_data(self, uuid: str, interactions: int):
         payload = {'uuid': uuid, 'interactions': interactions}
-        logger.info(f"Patching {payload}")
         r = requests.patch(self.api_url + "/coins", params=payload)
         try:
             r.raise_for_status()

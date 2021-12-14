@@ -18,7 +18,7 @@ formatter = logging.Formatter('%(name)s:%(levelname)s - %(asctime)s %(message)s'
 now = datetime.datetime.now()
 
 if LEVEL == 'PRODUCTION':
-    handler = logging.FileHandler(f"{os.getcwd()}/logs/{now.day}-{now.month}-{now.year}.log", "a")
+    handler = logging.FileHandler(f"{os.getcwd()}/logs/crawler.log", "a")
 elif LEVEL == 'DEVELOPMENT':
     handler = logging.StreamHandler()
 else:

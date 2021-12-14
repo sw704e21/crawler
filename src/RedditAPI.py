@@ -1,3 +1,5 @@
+import time
+
 import praw
 import requests
 import logging
@@ -30,6 +32,7 @@ class RedditAPI:
         for t in tags[1:]:
             query += " OR " + t
         last = []
+        waittime = 1
         while True:
             i = 0
             new = []
@@ -58,6 +61,11 @@ class RedditAPI:
                     logger.error(e.args)
             last = new
             logger.info(f"Sent {i} new posts")
+            if i == 0 and waittime < 64:
+                waittime *= 2
+            elif i != 0:
+                waittime = 1
+            time.sleep(waittime)
 
     def post_data(self, data):
         logger.info(f"Post sub {data['permalink']}")
