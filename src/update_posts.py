@@ -88,7 +88,7 @@ class UpdatePosts:
         try:
             r = requests.delete(self.api_url + '/data/tfdict')
             r.raise_for_status()
-            logger.info(r.json())
+            logger.info(r.text)
         except Exception as e:
             logger.error(e)
 
