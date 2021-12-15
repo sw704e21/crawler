@@ -36,36 +36,39 @@ class RedditAPI:
         while True:
             i = 0
             new = []
-            for submission in reddit.subreddit('all').search(query, sort='new', limit=100):
-                try:
+            try:
+                for submission in reddit.subreddit('all').search(query, sort='new', limit=100):
+                    try:
+                        if submission.id not in last:
 
-                    if submission.id not in last:
-
-                        # Adding the specified submission fields to the json object
-                        redditor = submission.author
-                        sub_dict = {'karma': redditor.link_karma + redditor.comment_karma,
-                                    'created_utc': submission.created_utc * 1000,
-                                    'permalink': reddit_url + submission.permalink,
-                                    'uuid': submission.id,
-                                    'source': 'reddit',
-                                    'title': submission.title,
-                                    'selftext': submission.selftext,
-                                    'score': submission.score,
-                                    'num_comments': submission.num_comments}
-                        # sub_dict['source'] = subreddit.display_name
-                        # posting submission data through the API
-                        self.post_data(sub_dict)
-                        i += 1
-                    new.append(submission.id)
-                except Exception as e:
-                    logger.error(e.args)
-            last = new
-            logger.info(f"Sent {i} new posts")
-            if i == 0 and waittime < 64:
-                waittime *= 2
-            elif i != 0:
-                waittime = 1
-            time.sleep(waittime)
+                            # Adding the specified submission fields to the json object
+                            redditor = submission.author
+                            sub_dict = {'karma': redditor.link_karma + redditor.comment_karma,
+                                        'created_utc': submission.created_utc * 1000,
+                                        'permalink': reddit_url + submission.permalink,
+                                        'uuid': submission.id,
+                                        'source': 'reddit',
+                                        'title': submission.title,
+                                        'selftext': submission.selftext,
+                                        'score': submission.score,
+                                        'num_comments': submission.num_comments}
+                            # sub_dict['source'] = subreddit.display_name
+                            # posting submission data through the API
+                            self.post_data(sub_dict)
+                            i += 1
+                        new.append(submission.id)
+                    except Exception as e:
+                        logger.error(e.args)
+                last = new
+                logger.info(f"Sent {i} new posts")
+                if i == 0 and waittime < 128:
+                    waittime *= 2
+                elif i != 0:
+                    waittime = 1
+                time.sleep(waittime)
+            except Exception as e:
+                logger.error(e)
+                time.sleep(60)
 
     def post_data(self, data):
         logger.info(f"Post sub {data['permalink']}")

@@ -159,6 +159,5 @@ class UpdatePosts:
         r = requests.patch(self.api_url + "/coins", params=payload)
         try:
             r.raise_for_status()
-            logger.info(r.status_code)
         except requests.exceptions.HTTPError as e:
             logger.error(e)
