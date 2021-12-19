@@ -49,6 +49,7 @@ class MultiProcessScraper:
         logger.info("Starting kafka consumer")
         consumer = kafka.KafkaConsumer(self.topic, bootstrap_servers=self.server, api_version=self.api_version,
                                        group_id="Crawler")
+        self.restart_process()
         for m in consumer:
             try:
                 tag = m.value.decode('utf-8')
