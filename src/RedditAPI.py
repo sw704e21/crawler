@@ -1,5 +1,3 @@
-import time
-
 import praw
 import requests
 import logging

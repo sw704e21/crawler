@@ -1,5 +1,6 @@
 from locust import HttpUser, task, between
 import random
+
 sort = [
     "mentions",
     "-mentions",
@@ -40,6 +41,7 @@ coins = [
 
 class CryptoUser(HttpUser):
     wait_time = between(15, 30)
+
     @task(2)
     def all_coin(self):
         sort_param = random.choice(sort)
