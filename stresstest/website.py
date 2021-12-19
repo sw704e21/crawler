@@ -28,7 +28,7 @@ class CryptoUser(HttpUser):
     @task(2)
     def all_coin(self):
         # sort_param = random.choice(sort)
-        self.client.get(f'/#/', name="front page")
+        self.client.get('/#/', name="front page")
 
     @task
     def coin_info(self):
