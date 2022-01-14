@@ -11,7 +11,7 @@ class MultiProcessScraper:
 
     def __init__(self):
         # Kafka server config
-        self.host = "104.41.213.247"
+        self.host = "kafka-cryptopinion.northeurope.cloudapp.azure.com"
         self.port = "9092"
         self.server = self.host + ":" + self.port
         self.topic = "CoinsToTrack"
@@ -49,7 +49,7 @@ class MultiProcessScraper:
         logger.info("Starting kafka consumer")
         consumer = kafka.KafkaConsumer(self.topic, bootstrap_servers=self.server, api_version=self.api_version,
                                        group_id="Crawler")
-        self.restart_process()
+        # self.restart_process()
         for m in consumer:
             try:
                 tag = m.value.decode('utf-8')
