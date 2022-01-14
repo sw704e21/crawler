@@ -38,12 +38,12 @@ class MultiProcessScraper:
             p = psutil.Process(self.reddit)
             p.kill()
         self.reddit = reddit.pid
-        # twitter = Process(target=self.start_twitter)
-        # twitter.start()
-        # if self.twitter:
-        #     p = psutil.Process(self.twitter)
-        #     p.kill()
-        # self.twitter = twitter.pid
+        twitter = Process(target=self.start_twitter)
+        twitter.start()
+        if self.twitter:
+            p = psutil.Process(self.twitter)
+            p.kill()
+        self.twitter = twitter.pid
 
     def run(self):
         logger.info("Starting kafka consumer")

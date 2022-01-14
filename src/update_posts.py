@@ -18,27 +18,27 @@ logger = logging.getLogger("downloader")
 
 
 # Calculation of x amount of previous days, returned as unix timestamp.
-def past_days_unix(days):
-    now = datetime.now()
-    unix_timestamp = (time.mktime(now.timetuple()))
-    daysago = time.localtime(unix_timestamp - (days * 86400))
-    return daysago
+# def past_days_unix(days):
+#    now = datetime.now()
+#    unix_timestamp = (time.mktime(now.timetuple()))
+#    daysago = time.localtime(unix_timestamp - (days * 86400))
+#    return daysago
 
 
 # Calculation of the past 24 hours, returned as unix timestamp.
-def past_24h_unix():
-    now = datetime.now()
-    unix_timestamp = (time.mktime(now.timetuple()))
-    yday = int((unix_timestamp - 86400))
-    return yday
+# def past_24h_unix():
+#    now = datetime.now()
+#    unix_timestamp = (time.mktime(now.timetuple()))
+#    yday = int((unix_timestamp - 86400))
+#    return yday
 
 
 # Calculation x amount of previous hours, returned as unix timestamp.
-def past_hours_unix(hours):
-    now = datetime.now()
-    unix_timestamp = (time.mktime(now.timetuple()))
-    hour_ago = time.localtime(unix_timestamp - (hours * 3600))
-    return hour_ago
+# def past_hours_unix(hours):
+#    now = datetime.now()
+#    unix_timestamp = (time.mktime(now.timetuple()))
+#    hour_ago = time.localtime(unix_timestamp - (hours * 3600))
+#    return hour_ago
 
 
 def initialize_reddit():
@@ -122,7 +122,7 @@ class UpdatePosts:
         i = 100
         j = 0
         a = Client(TWITTER_BEARER_TOKEN, TWITTER_APP_KEY, TWITTER_APP_SECRET, TWITTER_KEY, TWITTER_SECRET)
-        while j * i < len(lst):
+        while j * i < len(lst) and j < 900:
             slice = lst[i * j: i * (j + 1)]
             lst = a.get_tweets(ids=slice, tweet_fields='public_metrics').data
             for tweet in lst:
