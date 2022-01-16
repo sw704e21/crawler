@@ -38,18 +38,18 @@ class MultiProcessScraper:
             p = psutil.Process(self.reddit)
             p.kill()
         self.reddit = reddit.pid
-        twitter = Process(target=self.start_twitter)
-        twitter.start()
-        if self.twitter:
-            p = psutil.Process(self.twitter)
-            p.kill()
-        self.twitter = twitter.pid
+        # twitter = Process(target=self.start_twitter)
+        # twitter.start()
+        # if self.twitter:
+        #     p = psutil.Process(self.twitter)
+        #     p.kill()
+        # self.twitter = twitter.pid
 
     def run(self):
         logger.info("Starting kafka consumer")
         consumer = kafka.KafkaConsumer(self.topic, bootstrap_servers=self.server, api_version=self.api_version,
                                        group_id="Crawler")
-        # self.restart_process()
+        self.restart_process()
         for m in consumer:
             try:
                 tag = m.value.decode('utf-8')
